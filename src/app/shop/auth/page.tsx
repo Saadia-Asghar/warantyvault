@@ -10,7 +10,7 @@ import { SelectField } from "@/components/ui/select-field";
 import { Button } from "@/components/ui/button";
 import { Store, ArrowLeft } from "lucide-react";
 import { ROLE_COPY } from "@/lib/copy";
-import { DEMO_LOGINS, showDemoCredentials } from "@/lib/demo";
+import { AUTH_PLACEHOLDERS } from "@/lib/form-placeholders";
 import { shopLoginSchema, shopRegisterSchema } from "@/lib/validators";
 import {
   type FieldErrors,
@@ -151,7 +151,7 @@ export default function ShopAuthPage() {
               label="Email"
               type="email"
               autoComplete="email"
-              placeholder="g6@dollars.demo.pk"
+              placeholder={AUTH_PLACEHOLDERS.email.shop}
               hint="Work email for this outlet — used to sign in"
               value={form.email}
               error={fieldErrors.email}
@@ -161,7 +161,7 @@ export default function ShopAuthPage() {
               label="Password"
               type="password"
               autoComplete={mode === "login" ? "current-password" : "new-password"}
-              placeholder="demo1234"
+              placeholder={AUTH_PLACEHOLDERS.password}
               hint="At least 8 characters"
               minLength={8}
               value={form.password}
@@ -172,7 +172,7 @@ export default function ShopAuthPage() {
               <>
                 <Input
                   label="Shop display name"
-                  placeholder="Dollar's Mobile G-6"
+                  placeholder={AUTH_PLACEHOLDERS.shopName}
                   hint="Name customers see on warranties and the map"
                   value={form.shopName}
                   error={fieldErrors.shopName}
@@ -180,7 +180,7 @@ export default function ShopAuthPage() {
                 />
                 <Input
                   label="Owner name"
-                  placeholder="Ahmed Khan"
+                  placeholder={AUTH_PLACEHOLDERS.ownerName}
                   hint="Full name of the shop owner"
                   value={form.ownerName}
                   error={fieldErrors.ownerName}
@@ -190,7 +190,7 @@ export default function ShopAuthPage() {
                   label="Phone"
                   type="tel"
                   inputMode="tel"
-                  placeholder="03001234567"
+                  placeholder={AUTH_PLACEHOLDERS.phone}
                   hint="Pakistani mobile — 11 digits, no spaces"
                   value={form.phone}
                   error={fieldErrors.phone}
@@ -199,7 +199,7 @@ export default function ShopAuthPage() {
                 <div className="grid grid-cols-2 gap-3">
                   <Input
                     label="City"
-                    placeholder="Islamabad"
+                    placeholder={AUTH_PLACEHOLDERS.city}
                     hint="e.g. Islamabad, Lahore"
                     value={form.city}
                     error={fieldErrors.city}
@@ -207,7 +207,7 @@ export default function ShopAuthPage() {
                   />
                   <Input
                     label="Sector / area"
-                    placeholder="G-6"
+                    placeholder={AUTH_PLACEHOLDERS.sector}
                     hint="Sector or locality code"
                     value={form.sector}
                     error={fieldErrors.sector}
@@ -216,7 +216,7 @@ export default function ShopAuthPage() {
                 </div>
                 <Input
                   label="Full address"
-                  placeholder="G-6 Markaz, Plot 12"
+                  placeholder={AUTH_PLACEHOLDERS.address}
                   hint="Plot, street, or markaz — min 2 characters (e.g. G-6 Markaz)"
                   value={form.address}
                   error={fieldErrors.address}
@@ -270,15 +270,6 @@ export default function ShopAuthPage() {
               </p>
             )}
           </form>
-          {showDemoCredentials() && (
-            <p className="mt-4 rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)] px-3 py-2 text-xs text-[var(--text-muted)]">
-              <strong className="text-[var(--text-primary)]">Demo:</strong>{" "}
-              {DEMO_LOGINS.filter((d) => d.role.startsWith("Shop"))
-                .map((d) => d.login)
-                .join(" · ")}{" "}
-              / demo1234
-            </p>
-          )}
         </Card>
       </main>
     </div>

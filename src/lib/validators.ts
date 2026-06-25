@@ -46,7 +46,7 @@ export const buyerRegisterSchema = z.object({
 });
 
 export const buyerLoginSchema = z.object({
-  phone: z.string().min(10),
+  email: z.string().email("Valid email required"),
   password: z.string().min(1),
 });
 

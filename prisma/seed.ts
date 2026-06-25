@@ -6,7 +6,7 @@ import { recordAuditEvent } from "../src/lib/audit";
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log("Seeding franchise network demo…");
+  console.log("Seeding franchise network…");
 
   await prisma.pendingWarrantyAlert.deleteMany();
   await prisma.userPreference.deleteMany();
@@ -254,12 +254,7 @@ async function main() {
 
   console.log("Stock dispatch:", dispatch.id, "— 3 units in G-6 inventory");
 
-  console.log("Done!");
-  console.log("Brand:", "dollarsmobile@demo.pk / demo1234");
-  console.log("Shop G-6:", "g6@dollars.demo.pk / demo1234");
-  console.log("Shop I-8:", "i8@dollars.demo.pk / demo1234 (can process claims!)");
-  console.log("Shop Lahore:", "lhr@dollars.demo.pk / demo1234");
-  console.log("Buyer:", "03001234567 / demo1234");
+  console.log("Done! Sample accounts seeded — use emails from seed data to sign in.");
 }
 
 main().catch(console.error).finally(() => prisma.$disconnect());

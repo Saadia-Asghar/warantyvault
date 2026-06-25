@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Mail } from "lucide-react";
+import { AUTH_PLACEHOLDERS, authEmailPlaceholder } from "@/lib/form-placeholders";
 
 const ROLES = [
   { id: "buyer", label: "Buyer (wallet)" },
@@ -90,15 +91,11 @@ export default function ForgotPasswordPage() {
               label="Email"
               type="email"
               required
+              placeholder={authEmailPlaceholder(role)}
+              hint="Email on your account"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
-            {role === "buyer" && (
-              <p className="text-xs text-[var(--text-tertiary)]">
-                Buyers must have an email on their account. Add one when registering, or contact
-                support.
-              </p>
-            )}
             {error && <p className="text-sm text-red-400">{error}</p>}
             {message && <p className="text-sm text-emerald-400">{message}</p>}
             <Button type="submit" loading={loading} className="w-full">

@@ -8,7 +8,6 @@ export const BRAND = {
   subhead:
     "Company dispatches stock → shop records sale amount + warranty → buyer gets proof in their wallet. One hash locks price, terms, and optional paper card photo.",
   footer: "Shop sale & warranty registry — not official OEM, PTA, or payment processing.",
-  demoLabel: "Demo mode — sample data only. Do not use for real customers.",
 } as const;
 
 export const ROLE_COPY = {

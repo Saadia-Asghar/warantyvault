@@ -56,9 +56,11 @@ export async function POST(req: NextRequest) {
 
     if (action === "login") {
       const data = buyerLoginSchema.parse(body);
-      const buyer = await prisma.buyer.findUnique({ where: { phone: data.phone } });
+      const buyer = await prisma.buyer.findUnique({
+        where: { email: data.email.toLowerCase() },
+      });
       if (!buyer || !(await verifyPassword(data.password, buyer.passwordHash))) {
-        return jsonError("Invalid phone or password", 401);
+        return jsonError("Invalid email or password", 401);
       }
 
       await deliverPendingAlerts(buyer.id, buyer.phone);

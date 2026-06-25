@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Shield } from "lucide-react";
+import { AUTH_PLACEHOLDERS } from "@/lib/form-placeholders";
 
 export default function AdminAuthPage() {
   const [loading, setLoading] = useState(false);
@@ -52,12 +53,18 @@ export default function AdminAuthPage() {
             <Input
               label="Email"
               type="email"
+              required
+              placeholder={AUTH_PLACEHOLDERS.email.admin}
+              hint="Platform admin account"
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
             />
             <Input
               label="Password"
               type="password"
+              required
+              placeholder={AUTH_PLACEHOLDERS.password}
+              hint="At least 8 characters"
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
             />
