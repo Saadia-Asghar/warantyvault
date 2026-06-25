@@ -67,6 +67,20 @@ Shop: claim reject with reason, policy edit. Buyer: change password in profile. 
 
 Without Polygon env vars, warranties still work end-to-end using the local audit registry (clearly labeled in verify UI).
 
+### Enable real Polygon (3 steps)
+
+```bash
+npm run setup:polygon   # generates wallet in .env if needed
+# Fund deployer at https://faucet.polygon.technology/
+npm run setup:polygon   # deploys contract when wallet has MATIC
+```
+
+Add the same vars to **Vercel**: `POLYGON_RPC_URL`, `POLYGON_PRIVATE_KEY`, `WARRANTY_REGISTRY_CONTRACT`, `NEXT_PUBLIC_WARRANTY_REGISTRY_CONTRACT`.
+
+On `/verify`, users can **Connect MetaMask** (Polygon Amoy) to read the public contract.
+
+**Market research & feature roadmap:** [docs/MARKET_RESEARCH_PK.md](docs/MARKET_RESEARCH_PK.md)
+
 | Role | Login | Password |
 |------|-------|----------|
 | Brand | dollarsmobile@demo.pk | demo1234 |

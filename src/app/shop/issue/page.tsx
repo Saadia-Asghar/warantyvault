@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2 } from "lucide-react";
+import { PtaImeiCheckLink } from "@/components/pta-imei-link";
 
 type Policy = {
   id: string;
@@ -199,6 +200,7 @@ export default function IssueWarrantyPage() {
                       value={form.serialImei}
                       onChange={(e) => setForm({ ...form, serialImei: e.target.value })}
                     />
+                    <PtaImeiCheckLink imei={form.serialImei} />
                     <div>
                       <label className="label-field">Duration (months)</label>
                       <select

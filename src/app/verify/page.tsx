@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatDate, policyTypeLabel } from "@/lib/utils";
 import { CheckCircle2, XCircle, AlertCircle } from "lucide-react";
+import { PolygonMetaMaskVerify } from "@/components/polygon-metamask-verify";
+import { ChainLiveStatus } from "@/components/chain-live-status";
 
 function VerifyContent() {
   const searchParams = useSearchParams();
@@ -133,6 +135,7 @@ function VerifyContent() {
               ))}
             </div>
           )}
+          <PolygonMetaMaskVerify warrantyHash={hash.trim()} />
         </div>
       )}
     </Card>
@@ -150,6 +153,7 @@ export default function VerifyPage() {
         <p className="text-xs text-[var(--text-muted)]">No login required</p>
       </header>
       <main className="mx-auto max-w-lg px-4 py-8">
+        <ChainLiveStatus />
         <Suspense fallback={<p className="text-[var(--text-muted)]">Loading…</p>}>
           <VerifyContent />
         </Suspense>
