@@ -11,7 +11,9 @@ export type AuditEventType =
   | "OUTLET_APPROVE"
   | "OUTLET_REJECT"
   | "OUTLET_SUSPEND"
-  | "FRAUD_FLAG";
+  | "FRAUD_FLAG"
+  | "WALLET_LINK"
+  | "WALLET_UNLINK";
 
 export async function recordAuditEvent(input: {
   eventType: AuditEventType;
