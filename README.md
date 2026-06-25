@@ -43,8 +43,19 @@ Open [http://localhost:3000](http://localhost:3000)
 | `RESEND_API_KEY` | Email notifications (optional) |
 | `EMAIL_FROM` | Verified sender in Resend |
 | `ADMIN_EMAIL` | Admin / complaint notifications |
+| `CRON_SECRET` | Secures `/api/cron/reminders` (Vercel daily job) |
+| `TWILIO_*` | SMS on issue + expiry reminders (optional) |
 
-## Demo accounts (after seed)
+## Brand & admin features
+
+| Route | Purpose |
+|-------|---------|
+| `/company/warranties` | Browse network warranties, search, revoke, CSV export |
+| `/company/fraud` | Fraud flags + open claims across outlets |
+| `/company` | Reinstate suspended outlets |
+| `/admin` | Complaint details, warranty search & revoke |
+
+Shop: claim reject with reason, policy edit. Buyer: change password in profile. Daily expiry reminders (email + SMS) via Vercel cron.
 
 | Role | Login | Password |
 |------|-------|----------|

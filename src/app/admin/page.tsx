@@ -3,8 +3,10 @@
 import { useEffect, useState } from "react";
 import { Navbar } from "@/components/navbar";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Activity } from "lucide-react";
-import { formatDate } from "@/lib/utils";
+import { formatDate, warrantyStatusLabel } from "@/lib/utils";
 
 export default function AdminDashboardPage() {
   const [data, setData] = useState<{
@@ -12,7 +14,16 @@ export default function AdminDashboardPage() {
     recentFraud: Array<{ serialImei: string; reason: string; shop?: { shopName: string } }>;
   } | null>(null);
   const [complaints, setComplaints] = useState<
-    Array<{ id: string; subject: string; name: string; email: string; status: string; createdAt: string }>
+    Array<{
+      id: string;
+      subject: string;
+      name: string;
+      email: string;
+      phone: string | null;
+      message: string;
+      status: string;
+      createdAt: string;
+    }>
   >([]);
   const [emails, setEmails] = useState<
     Array<{ id: string; to: string; subject: string; status: string; createdAt: string }>
@@ -20,6 +31,11 @@ export default function AdminDashboardPage() {
   const [audit, setAudit] = useState<
     Array<{ eventType: string; eventHash: string; createdAt: string }>
   >([]);
+  const [searchQ, setSearchQ] = useState("");
+  const [warranties, setWarranties] = useState<
+    Array<{ id: string; warrantyCode: string; productName: string; status: string; shop?: { shopName: string } }>
+  >([]);
+  const [expandedComplaint, setExpandedComplaint] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/admin/stats")
@@ -53,6 +69,23 @@ export default function AdminDashboardPage() {
     setComplaints((c) => c.map((x) => (x.id === id ? { ...x, status: "RESOLVED" } : x)));
   }
 
+  async function searchWarranties() {
+    const res = await fetch(`/api/admin/warranties?q=${encodeURIComponent(searchQ)}`);
+    const j = await res.json();
+    if (j.success) setWarranties(j.data);
+  }
+
+  async function revokeWarranty(id: string) {
+    const reason = window.prompt("Revoke reason?");
+    if (!reason?.trim()) return;
+    await fetch(`/api/warranties/${id}/revoke`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ reason }),
+    });
+    void searchWarranties();
+  }
+
   function exportAudit() {
     const csv = ["eventType,eventHash,createdAt", ...audit.map((e) => `${e.eventType},${e.eventHash},${e.createdAt}`)].join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
@@ -83,6 +116,44 @@ export default function AdminDashboardPage() {
         </div>
 
         <h2 className="mb-2 mt-8 text-xs font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
+          Revoke warranty
+        </h2>
+        <div className="panel flex gap-2 p-3">
+          <Input
+            placeholder="Search code, product, phone, hash"
+            value={searchQ}
+            onChange={(e) => setSearchQ(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && void searchWarranties()}
+          />
+          <Button onClick={() => void searchWarranties()}>Search</Button>
+        </div>
+        {warranties.length > 0 && (
+          <div className="activity-feed mt-2">
+            {warranties.map((w) => (
+              <div key={w.id} className="flex items-center justify-between border-b border-[var(--border)] p-4 last:border-b-0">
+                <div>
+                  <p className="font-medium text-[var(--text-primary)]">{w.productName}</p>
+                  <p className="font-mono text-xs text-[var(--text-muted)]">{w.warrantyCode}</p>
+                  <p className="text-xs text-[var(--text-tertiary)]">{w.shop?.shopName}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-[var(--text-muted)]">{warrantyStatusLabel(w.status)}</p>
+                  {w.status !== "REVOKED" && (
+                    <button
+                      type="button"
+                      className="mt-1 text-xs text-red-500"
+                      onClick={() => void revokeWarranty(w.id)}
+                    >
+                      Revoke
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <h2 className="mb-2 mt-8 text-xs font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
           Complaints inbox
         </h2>
         <div className="activity-feed">
@@ -91,10 +162,19 @@ export default function AdminDashboardPage() {
           ) : (
             complaints.map((c) => (
               <div key={c.id} className="border-b border-[var(--border)] p-4 last:border-b-0">
-                <p className="font-medium text-[var(--text-primary)]">{c.subject}</p>
-                <p className="text-xs text-[var(--text-muted)]">
-                  {c.name} · {c.email} · {formatDate(c.createdAt)}
-                </p>
+                <button
+                  type="button"
+                  className="w-full text-left"
+                  onClick={() => setExpandedComplaint(expandedComplaint === c.id ? null : c.id)}
+                >
+                  <p className="font-medium text-[var(--text-primary)]">{c.subject}</p>
+                  <p className="text-xs text-[var(--text-muted)]">
+                    {c.name} · {c.email} · {formatDate(c.createdAt)}
+                  </p>
+                </button>
+                {expandedComplaint === c.id && (
+                  <p className="mt-2 whitespace-pre-wrap text-sm text-[var(--text-muted)]">{c.message}</p>
+                )}
                 <p className="mt-1 text-xs text-[var(--accent)]">{c.status}</p>
                 {c.status === "OPEN" && (
                   <button
@@ -152,6 +232,7 @@ export default function AdminDashboardPage() {
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-mono text-xs text-[var(--text-primary)]">{f.serialImei}</p>
                   <p className="text-xs text-[var(--text-muted)]">{f.reason}</p>
+                  {f.shop && <p className="text-xs text-[var(--text-tertiary)]">{f.shop.shopName}</p>}
                 </div>
               </div>
             ))

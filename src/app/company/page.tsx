@@ -54,7 +54,7 @@ export default function CompanyDashboardPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statusFilter, cityFilter]);
 
-  async function act(outletId: string, action: "approve" | "reject" | "suspend") {
+  async function act(outletId: string, action: "approve" | "reject" | "suspend" | "reinstate") {
     setLoading(outletId);
     await fetch("/api/company/outlets", {
       method: "PATCH",
@@ -172,6 +172,15 @@ export default function CompanyDashboardPage() {
                       onClick={() => act(o.id, "suspend")}
                     >
                       Suspend outlet
+                    </Button>
+                  )}
+                  {o.approvalStatus === "SUSPENDED" && (
+                    <Button
+                      className="mt-4 w-full"
+                      loading={loading === o.id}
+                      onClick={() => act(o.id, "reinstate")}
+                    >
+                      Reinstate outlet
                     </Button>
                   )}
                 </div>

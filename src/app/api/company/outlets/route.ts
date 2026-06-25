@@ -41,7 +41,7 @@ export async function PATCH(req: NextRequest) {
     if (!requireRole(session, "company")) return jsonError("Unauthorized", 401);
 
     const { outletId, action } = await req.json();
-    if (!outletId || !["approve", "reject", "suspend"].includes(action)) {
+    if (!outletId || !["approve", "reject", "suspend", "reinstate"].includes(action)) {
       return jsonError("Invalid request", 400);
     }
 
@@ -60,6 +60,7 @@ export async function PATCH(req: NextRequest) {
       approve: "APPROVED",
       reject: "REJECTED",
       suspend: "SUSPENDED",
+      reinstate: "APPROVED",
     } as const;
 
     const updated = await prisma.shop.update({
@@ -78,7 +79,9 @@ export async function PATCH(req: NextRequest) {
         ? "OUTLET_APPROVE"
         : action === "reject"
           ? "OUTLET_REJECT"
-          : "OUTLET_SUSPEND";
+          : action === "suspend"
+            ? "OUTLET_SUSPEND"
+            : "OUTLET_APPROVE";
 
     await recordAuditEvent({
       eventType,
@@ -93,11 +96,13 @@ export async function PATCH(req: NextRequest) {
       approve: "Outlet approved",
       reject: "Outlet application rejected",
       suspend: "Outlet suspended",
+      reinstate: "Outlet reinstated",
     };
     const bodies = {
       approve: `Your outlet ${updated.shopName} is now approved on the brand network.`,
       reject: `Your outlet application for ${updated.shopName} was not approved.`,
       suspend: `Your outlet ${updated.shopName} has been suspended by the brand.`,
+      reinstate: `Your outlet ${updated.shopName} has been reinstated on the brand network.`,
     };
 
     await notifyUser({

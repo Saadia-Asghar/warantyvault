@@ -12,10 +12,15 @@ type Policy = {
   name: string;
   durationMonths: number;
   policyType: string;
+  category: string;
+  exclusions: string;
+  termsEn: string;
+  termsUr: string;
 };
 
 export default function ShopPoliciesPage() {
   const [policies, setPolicies] = useState<Policy[]>([]);
+  const [editing, setEditing] = useState<Policy | null>(null);
   const [form, setForm] = useState({
     name: "",
     category: "MOBILE",
@@ -45,6 +50,19 @@ export default function ShopPoliciesPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form),
     });
+    setForm({ ...form, name: "", termsEn: "", termsUr: "" });
+    load();
+  }
+
+  async function saveEdit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editing) return;
+    await fetch("/api/policies", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: editing.id, ...form }),
+    });
+    setEditing(null);
     load();
   }
 
@@ -55,6 +73,19 @@ export default function ShopPoliciesPage() {
       body: JSON.stringify({ id }),
     });
     load();
+  }
+
+  function startEdit(p: Policy) {
+    setEditing(p);
+    setForm({
+      name: p.name,
+      category: p.category as "MOBILE",
+      policyType: p.policyType as "REPAIR_ONLY",
+      durationMonths: p.durationMonths,
+      exclusions: p.exclusions,
+      termsEn: p.termsEn,
+      termsUr: p.termsUr,
+    });
   }
 
   return (
@@ -70,17 +101,32 @@ export default function ShopPoliciesPage() {
                   {p.durationMonths}mo · {p.policyType}
                 </p>
               </div>
-              <button type="button" className="text-xs text-red-500" onClick={() => void remove(p.id)}>
-                Delete
-              </button>
+              <div className="flex gap-2">
+                <button type="button" className="text-xs text-[var(--accent)]" onClick={() => startEdit(p)}>
+                  Edit
+                </button>
+                <button type="button" className="text-xs text-red-500" onClick={() => void remove(p.id)}>
+                  Delete
+                </button>
+              </div>
             </div>
           ))}
         </div>
-        <form onSubmit={create} className="panel space-y-3 p-4">
+        <form onSubmit={editing ? saveEdit : create} className="panel space-y-3 p-4">
+          <h2 className="font-semibold text-[var(--text-primary)]">
+            {editing ? "Edit template" : "Add template"}
+          </h2>
           <Input label="Name" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
           <Textarea label="Terms EN" required value={form.termsEn} onChange={(e) => setForm({ ...form, termsEn: e.target.value })} />
           <Textarea label="Terms UR" required value={form.termsUr} onChange={(e) => setForm({ ...form, termsUr: e.target.value })} />
-          <Button type="submit" className="w-full">Add template</Button>
+          <div className="flex gap-2">
+            <Button type="submit" className="flex-1">{editing ? "Save changes" : "Add template"}</Button>
+            {editing && (
+              <Button type="button" variant="secondary" onClick={() => setEditing(null)}>
+                Cancel
+              </Button>
+            )}
+          </div>
         </form>
       </main>
       <ShopBottomNav />

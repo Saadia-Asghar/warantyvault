@@ -41,6 +41,8 @@ export default function ShopVerifyPage() {
   const [claimId, setClaimId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [rejectReason, setRejectReason] = useState("");
+  const [showReject, setShowReject] = useState(false);
 
   async function verify() {
     setLoading(true);
@@ -92,20 +94,27 @@ export default function ShopVerifyPage() {
     }
   }
 
-  async function updateClaim(status: string) {
+  async function updateClaim(status: string, rejectionReason?: string) {
     if (!claimId) return;
+    if (status === "REJECTED" && !rejectionReason?.trim()) {
+      setError("Rejection reason required");
+      return;
+    }
     setLoading(true);
     const res = await fetch("/api/claims", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ claimId, status }),
+      body: JSON.stringify({ claimId, status, rejectionReason }),
     });
     const json = await res.json();
     setLoading(false);
     if (json.success) {
       setClaimId(null);
       setIssue("");
-      alert(`Claim marked as ${status}`);
+      setShowReject(false);
+      setRejectReason("");
+      setResult(null);
+      setHash("");
     } else {
       setError(json.error);
     }
@@ -218,7 +227,32 @@ export default function ShopVerifyPage() {
                     <Button onClick={() => updateClaim("EXCHANGED")}>
                       Exchanged
                     </Button>
+                    <Button variant="danger" onClick={() => setShowReject(true)}>
+                      Reject
+                    </Button>
                   </div>
+                  {showReject && (
+                    <div className="mt-3 space-y-2 rounded-xl border border-red-500/30 bg-red-500/5 p-3">
+                      <Textarea
+                        label="Rejection reason"
+                        value={rejectReason}
+                        onChange={(e) => setRejectReason(e.target.value)}
+                        placeholder="Not covered under policy, physical damage..."
+                      />
+                      <div className="flex gap-2">
+                        <Button
+                          variant="danger"
+                          loading={loading}
+                          onClick={() => updateClaim("REJECTED", rejectReason)}
+                        >
+                          Confirm reject
+                        </Button>
+                        <Button variant="secondary" onClick={() => setShowReject(false)}>
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

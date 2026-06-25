@@ -21,6 +21,7 @@ type Policy = {
 
 export default function CompanyPoliciesPage() {
   const [policies, setPolicies] = useState<Policy[]>([]);
+  const [editing, setEditing] = useState<Policy | null>(null);
   const [form, setForm] = useState({
     name: "",
     category: "MOBILE",
@@ -54,6 +55,31 @@ export default function CompanyPoliciesPage() {
     load();
   }
 
+  async function saveEdit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editing) return;
+    await fetch("/api/company/policies", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: editing.id, ...form }),
+    });
+    setEditing(null);
+    load();
+  }
+
+  function startEdit(p: Policy) {
+    setEditing(p);
+    setForm({
+      name: p.name,
+      category: p.category,
+      policyType: p.policyType,
+      durationMonths: p.durationMonths,
+      exclusions: p.exclusions,
+      termsEn: p.termsEn,
+      termsUr: p.termsUr,
+    });
+  }
+
   return (
     <div className="min-h-screen bg-[var(--bg-deep)] pb-24 md:pb-8">
       <Navbar role="company" name="Policies" />
@@ -66,20 +92,36 @@ export default function CompanyPoliciesPage() {
         <div className="activity-feed mb-6">
           {policies.map((p) => (
             <div key={p.id} className="activity-row flex-col items-start">
-              <p className="font-medium text-[var(--text-primary)]">{p.name}</p>
-              <p className="text-xs text-[var(--text-muted)]">
-                {p.durationMonths}mo · {p.policyType}
-              </p>
+              <div className="flex w-full items-start justify-between">
+                <div>
+                  <p className="font-medium text-[var(--text-primary)]">{p.name}</p>
+                  <p className="text-xs text-[var(--text-muted)]">
+                    {p.durationMonths}mo · {p.policyType}
+                  </p>
+                </div>
+                <button type="button" className="text-xs text-[var(--accent)]" onClick={() => startEdit(p)}>
+                  Edit
+                </button>
+              </div>
             </div>
           ))}
         </div>
 
-        <form onSubmit={create} className="panel space-y-3 p-4">
-          <h2 className="font-semibold text-[var(--text-primary)]">Add network policy</h2>
+        <form onSubmit={editing ? saveEdit : create} className="panel space-y-3 p-4">
+          <h2 className="font-semibold text-[var(--text-primary)]">
+            {editing ? "Edit network policy" : "Add network policy"}
+          </h2>
           <Input label="Name" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
           <Textarea label="Terms (EN)" required value={form.termsEn} onChange={(e) => setForm({ ...form, termsEn: e.target.value })} />
           <Textarea label="Terms (UR)" required value={form.termsUr} onChange={(e) => setForm({ ...form, termsUr: e.target.value })} />
-          <Button type="submit" className="w-full">Save policy</Button>
+          <div className="flex gap-2">
+            <Button type="submit" className="flex-1">{editing ? "Save changes" : "Save policy"}</Button>
+            {editing && (
+              <Button type="button" variant="secondary" onClick={() => setEditing(null)}>
+                Cancel
+              </Button>
+            )}
+          </div>
         </form>
       </main>
       <CompanyBottomNav />

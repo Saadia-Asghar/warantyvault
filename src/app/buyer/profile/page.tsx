@@ -86,12 +86,36 @@ export default function BuyerProfilePage() {
           <h2 className="text-sm font-semibold text-[var(--text-primary)]">Password</h2>
           <div className="mt-3 space-y-3">
             <Input
+              label="Current password"
+              type="password"
+              value={passwords.current}
+              onChange={(e) => setPasswords({ ...passwords, current: e.target.value })}
+            />
+            <Input
               label="New password"
               type="password"
               minLength={8}
               value={passwords.next}
               onChange={(e) => setPasswords({ ...passwords, next: e.target.value })}
             />
+            <Button
+              className="w-full"
+              onClick={async () => {
+                const res = await fetch("/api/auth/change-password", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    currentPassword: passwords.current,
+                    newPassword: passwords.next,
+                  }),
+                });
+                const j = await res.json();
+                setMessage(j.success ? "Password updated" : j.error);
+                if (j.success) setPasswords({ current: "", next: "" });
+              }}
+            >
+              Update password
+            </Button>
             <Button
               variant="secondary"
               className="w-full"
@@ -108,7 +132,7 @@ export default function BuyerProfilePage() {
                 setMessage(j.success ? j.data.message : j.error);
               }}
             >
-              Email reset link
+              Email reset link instead
             </Button>
           </div>
           {message && <p className="mt-2 text-xs text-[var(--accent)]">{message}</p>}

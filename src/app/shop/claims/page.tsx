@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ShopBottomNav } from "@/components/shop-bottom-nav";
 import { ShopTopBar } from "@/components/shop-top-bar";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { formatDate } from "@/lib/utils";
 
 type Claim = {
@@ -24,6 +25,8 @@ type Claim = {
 export default function ShopClaimsPage() {
   const [claims, setClaims] = useState<Claim[]>([]);
   const [loading, setLoading] = useState<string | null>(null);
+  const [rejectId, setRejectId] = useState<string | null>(null);
+  const [rejectReason, setRejectReason] = useState("");
 
   function load() {
     fetch("/api/claims")
@@ -37,14 +40,16 @@ export default function ShopClaimsPage() {
     load();
   }, []);
 
-  async function updateStatus(claimId: string, status: string) {
+  async function updateStatus(claimId: string, status: string, rejectionReason?: string) {
     setLoading(claimId);
     await fetch("/api/claims", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ claimId, status }),
+      body: JSON.stringify({ claimId, status, rejectionReason }),
     });
     setLoading(null);
+    setRejectId(null);
+    setRejectReason("");
     load();
   }
 
@@ -88,12 +93,30 @@ export default function ShopClaimsPage() {
                       >
                         Exchanged
                       </Button>
+                      <Button variant="danger" onClick={() => setRejectId(c.id)}>
+                        Reject
+                      </Button>
                     </>
                   )}
                   <Link href="/shop/verify" className="btn-ghost text-xs">
                     Verify
                   </Link>
                 </div>
+                {rejectId === c.id && (
+                  <div className="mt-3 space-y-2">
+                    <Textarea
+                      label="Rejection reason"
+                      value={rejectReason}
+                      onChange={(e) => setRejectReason(e.target.value)}
+                    />
+                    <Button
+                      variant="danger"
+                      onClick={() => void updateStatus(c.id, "REJECTED", rejectReason)}
+                    >
+                      Confirm reject
+                    </Button>
+                  </div>
+                )}
               </div>
             ))}
           </div>

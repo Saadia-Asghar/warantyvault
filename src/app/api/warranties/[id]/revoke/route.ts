@@ -23,10 +23,12 @@ export async function POST(
       return jsonError("Forbidden", 403);
     }
 
+    const { reason } = await req.json().catch(() => ({}));
     const updated = await revokeWarranty(
       params.id,
       session.sub,
-      session.role as "company" | "admin"
+      session.role as "company" | "admin",
+      typeof reason === "string" ? reason : undefined
     );
     return jsonOk(updated);
   } catch (error) {

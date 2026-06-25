@@ -26,6 +26,19 @@ Add each variable for **Production** (and **Preview** if you want preview deploy
 
 ---
 
+## Cron + SMS (optional)
+
+| Variable | What to paste | Notes |
+|----------|---------------|--------|
+| `CRON_SECRET` | Random 32+ char string | Vercel calls `/api/cron/reminders` daily (`vercel.json`); must match `Authorization: Bearer` header |
+| `TWILIO_ACCOUNT_SID` | From Twilio console | SMS on warranty issue + expiry reminders |
+| `TWILIO_AUTH_TOKEN` | From Twilio console | |
+| `TWILIO_PHONE_NUMBER` | E.164 e.g. `+1...` | Sender number |
+
+Without Twilio, SMS is logged to server console in development.
+
+---
+
 ## Where to get database URLs
 
 ### Supabase (project `gdmciybkdiuomowvpjyn`, region **ap-southeast-2**)

@@ -42,6 +42,9 @@ export default function CompanyAnalyticsPage() {
           <p className="mt-2 text-sm text-[var(--accent)]">
             warranties · {data?.kpis.claims ?? "—"} claims · {data?.kpis.fraudFlags ?? "—"} fraud flags
           </p>
+          <a href="/company/fraud" className="mt-3 inline-block text-sm text-[var(--accent)] underline">
+            View fraud & open claims →
+          </a>
         </div>
 
         <h2 className="mb-2 mt-8 text-xs font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">

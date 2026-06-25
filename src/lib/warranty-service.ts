@@ -7,6 +7,7 @@ import {
 } from "@/lib/hash";
 import { recordAuditEvent } from "@/lib/audit";
 import { notifyBuyerByPhoneWithEmail, notifyUser, resolveEmail } from "@/lib/notify";
+import { sendSms, warrantyIssuedSms } from "@/lib/sms";
 
 const REGISTERED_STATUSES = ["PENDING_TRANSFER", "ACTIVE", "EXPIRED", "REVOKED"];
 
@@ -136,6 +137,10 @@ export async function registerWarranty(warrantyId: string, shopId: string) {
     if (!notified) {
       await queuePendingBuyerAlert(updated.buyerPhone, updated.id);
     }
+    await sendSms(
+      updated.buyerPhone,
+      warrantyIssuedSms(updated.shop.shopName, updated.productName)
+    );
   }
 
   return updated;
@@ -200,11 +205,17 @@ export async function acceptWarrantyTransfer(warrantyId: string, buyerId: string
 export async function revokeWarranty(
   warrantyId: string,
   actorId: string,
-  actorRole: "company" | "admin"
+  actorRole: "company" | "admin",
+  reason?: string
 ) {
-  const warranty = await prisma.warranty.findUnique({ where: { id: warrantyId } });
+  const warranty = await prisma.warranty.findUnique({
+    where: { id: warrantyId },
+    include: { buyer: true },
+  });
   if (!warranty) throw new Error("Warranty not found");
   if (warranty.status === "REVOKED") throw new Error("Already revoked");
+
+  const revokeReason = reason?.trim() || "Revoked by authorized party";
 
   const { txHash } = await recordAuditEvent({
     eventType: "WARRANTY_REVOKE",
@@ -214,13 +225,28 @@ export async function revokeWarranty(
     entityId: warrantyId,
     warrantyId,
     warrantyHash: warranty.warrantyHash,
-    payload: { reason: "Revoked by authorized party" },
+    payload: { reason: revokeReason },
   });
 
-  return prisma.warranty.update({
+  const updated = await prisma.warranty.update({
     where: { id: warrantyId },
     data: { status: "REVOKED", chainTxTransfer: warranty.chainTxTransfer ?? txHash },
   });
+
+  if (warranty.buyerId) {
+    const buyerEmail = await resolveEmail("buyer", warranty.buyerId);
+    await notifyUser({
+      userId: warranty.buyerId,
+      userRole: "buyer",
+      title: "Warranty revoked",
+      body: `Your warranty for ${warranty.productName} was revoked. Reason: ${revokeReason}`,
+      type: "WARRANTY_REVOKED",
+      linkUrl: `/buyer/warranty/${warrantyId}`,
+      email: buyerEmail,
+    });
+  }
+
+  return updated;
 }
 
 export async function verifyWarrantyHash(hash: string) {
