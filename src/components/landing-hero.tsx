@@ -9,18 +9,18 @@ import { DEMO_LOGINS, showDemoCredentials } from "@/lib/demo";
 const steps = [
   {
     icon: Network,
-    title: "Brand approves outlets",
-    text: "HQ verifies each shop before it can issue network warranties.",
+    title: "Brand dispatches stock",
+    text: "HQ sends units to approved outlets — shop marks them received into inventory.",
   },
   {
     icon: MapPin,
-    title: "Buy anywhere in the network",
-    text: "Customer buys in G-6, claims in I-8 or Lahore — same brand, same digital warranty.",
+    title: "Shop seals the sale",
+    text: "Amount, payment method, and warranty terms are locked in one hash when the buyer is registered.",
   },
   {
     icon: QrCode,
-    title: "Verify with QR",
-    text: "Terms are locked at purchase. Shop scans customer QR to confirm coverage.",
+    title: "Buyer gets proof",
+    text: "Wallet, PDF, WhatsApp share — verify anywhere in the network with QR.",
   },
 ];
 
@@ -43,15 +43,15 @@ export function LandingHero() {
         <div className="summary-card mt-10 max-w-md">
           <p className="text-sm font-medium text-[var(--text-primary)]">For customers</p>
           <ul className="mt-2 space-y-1.5 text-sm text-[var(--text-muted)]">
-            <li>Warranty wallet on your phone</li>
+            <li>Purchase wallet with sale amount & warranty</li>
             <li>Map of approved outlets near you</li>
             <li>Chat with the shop that sold you the item</li>
           </ul>
           <p className="mt-4 text-sm font-medium text-[var(--text-primary)]">For shops & brands</p>
           <ul className="mt-2 space-y-1.5 text-sm text-[var(--text-muted)]">
-            <li>Issue and verify warranties in seconds</li>
+            <li>Receive brand stock, record cash/Raast sales</li>
             <li>Cross-city claims within your network</li>
-            <li>Fraud alerts and outlet approval</li>
+            <li>Sales analytics and fraud alerts</li>
           </ul>
         </div>
 

@@ -5,6 +5,7 @@ type WarrantyAccess = {
   buyerId: string | null;
   companyId: string | null;
   buyerPhone: string | null;
+  resaleToPhone?: string | null;
   status: string;
 };
 
@@ -22,6 +23,13 @@ export function canAccessWarranty(
       warranty.status === "PENDING_TRANSFER" &&
       warranty.buyerPhone &&
       session.phone === warranty.buyerPhone
+    ) {
+      return true;
+    }
+    if (
+      warranty.status === "PENDING_RESALE" &&
+      warranty.resaleToPhone &&
+      session.phone === warranty.resaleToPhone
     ) {
       return true;
     }

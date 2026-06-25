@@ -21,6 +21,7 @@ model Company {
   outlets      Shop[]
   policies     CompanyPolicyTemplate[]
   warranties   Warranty[]
+  stockDispatches StockDispatch[]
 }
 
 model CompanyPolicyTemplate {
@@ -63,6 +64,8 @@ model Shop {
   claims         Claim[]
   fraudFlags     FraudFlag[]
   supportThreads SupportThread[]
+  stockDispatches StockDispatch[]
+  stockItems     StockItem[]
 
   @@index([companyId])
   @@index([approvalStatus])
@@ -114,6 +117,10 @@ model Warranty {
   category         String
   serialImei       String?
   purchaseAmount   Float?
+  paymentMethod    String?
+  /// CASH | RAAST | CARD | OTHER
+  paymentReference String?
+  paperPhotoHash   String?
   policyType       String
   durationMonths   Int
   exclusions       String        @default("")
@@ -127,6 +134,12 @@ model Warranty {
   chainTxTransfer  String?
   buyerPhone       String?
   buyerName        String?
+  /// Resale transfer — new owner must accept
+  resaleToPhone    String?
+  resaleToName     String?
+  resaleAmount     Float?
+  previousBuyerId  String?
+  resaleCount      Int           @default(0)
   purchaseCity     String?
   purchaseSector   String?
   registeredAt     DateTime?
@@ -134,6 +147,7 @@ model Warranty {
   claims           Claim[]
   reminders        ReminderLog[]
   supportThreads   SupportThread[]
+  stockItem        StockItem?
 
   @@index([shopId])
   @@index([companyId])
@@ -335,4 +349,45 @@ model PushSubscription {
   createdAt DateTime @default(now())
 
   @@index([userId, userRole])
+}
+
+/// Company → shop stock dispatch (dealer intake)
+model StockDispatch {
+  id         String      @id @default(cuid())
+  companyId  String
+  company    Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  shopId     String
+  shop       Shop        @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  reference  String?
+  status     String      @default("PENDING")
+  /// PENDING | RECEIVED
+  createdAt  DateTime    @default(now())
+  receivedAt DateTime?
+  items      StockItem[]
+
+  @@index([companyId])
+  @@index([shopId, status])
+}
+
+/// Unit in shop inventory — linked to sale when sold
+model StockItem {
+  id          String         @id @default(cuid())
+  dispatchId  String?
+  dispatch    StockDispatch? @relation(fields: [dispatchId], references: [id], onDelete: SetNull)
+  companyId   String?
+  shopId      String
+  shop        Shop           @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  productName String
+  category    String
+  serialImei  String?
+  sku         String?
+  status      String         @default("IN_STOCK")
+  /// IN_STOCK | SOLD
+  warrantyId  String?        @unique
+  warranty    Warranty?      @relation(fields: [warrantyId], references: [id], onDelete: SetNull)
+  receivedAt  DateTime       @default(now())
+  soldAt      DateTime?
+
+  @@index([shopId, status])
+  @@index([companyId])
 }

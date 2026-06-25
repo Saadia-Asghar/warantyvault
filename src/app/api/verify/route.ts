@@ -97,6 +97,9 @@ export async function POST(req: NextRequest) {
         shopName: result.warranty.shop?.shopName,
         purchaseCity: result.warranty.purchaseCity,
         purchaseSector: result.warranty.purchaseSector,
+        purchaseAmount: result.warranty.purchaseAmount,
+        paymentMethod: result.warranty.paymentMethod,
+        paperPhotoSealed: !!result.warranty.paperPhotoHash,
         brandName: result.warranty.company?.brandName ?? null,
         networkWarranty: !!result.warranty.companyId,
         buyerPhone: result.warranty.buyerPhone

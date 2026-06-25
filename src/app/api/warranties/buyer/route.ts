@@ -23,6 +23,10 @@ export async function GET() {
             status: "PENDING_TRANSFER",
             buyerPhone: session.phone ?? "",
           },
+          {
+            status: "PENDING_RESALE",
+            resaleToPhone: session.phone ?? "",
+          },
         ],
       },
       include: {
@@ -91,7 +95,22 @@ export async function GET() {
       (r) => !dismissedKeys.has(`${r.warrantyId}:${r.kind}`)
     );
 
-    return jsonOk({ warranties: enriched, buckets, reminders: activeReminders });
+    const owned = warranties.filter(
+      (w) => w.buyerId === session.sub && w.status !== "PENDING_TRANSFER"
+    );
+    const summary = {
+      totalPurchases: owned.length,
+      activeWarranties: owned.filter((w) => w.status === "ACTIVE").length,
+      pendingAccept:
+        warranties.filter(
+          (w) =>
+            w.status === "PENDING_TRANSFER" ||
+            (w.status === "PENDING_RESALE" && w.resaleToPhone === session.phone)
+        ).length,
+      totalSpent: owned.reduce((sum, w) => sum + (w.purchaseAmount ?? 0), 0),
+    };
+
+    return jsonOk({ warranties: enriched, buckets, reminders: activeReminders, summary });
   } catch (error) {
     return handleApiError(error);
   }

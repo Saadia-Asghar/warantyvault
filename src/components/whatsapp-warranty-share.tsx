@@ -25,7 +25,7 @@ export function WhatsAppWarrantyShare({
   verifyUrl,
 }: Props) {
   const lines = [
-    "WarrantyVault PK — warranty proof",
+    "ShopSeal PK — sale & warranty proof",
     "",
     `Product: ${productName}`,
     `Code: ${warrantyCode}`,

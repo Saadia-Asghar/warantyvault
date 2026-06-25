@@ -51,6 +51,13 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const data = issueWarrantySchema.parse(body);
 
+    if (data.stockItemId) {
+      const stock = await prisma.stockItem.findFirst({
+        where: { id: data.stockItemId, shopId: session.sub, status: "IN_STOCK" },
+      });
+      if (!stock) return jsonError("Stock item not available", 404);
+    }
+
     if (data.serialImei) {
       const duplicate = await checkDuplicateSerial(data.serialImei);
       if (duplicate) {
@@ -78,6 +85,9 @@ export async function POST(req: NextRequest) {
         category: data.category,
         serialImei: data.serialImei?.trim() || null,
         purchaseAmount: data.purchaseAmount,
+        paymentMethod: data.paymentMethod,
+        paymentReference: data.paymentReference?.trim() || null,
+        paperPhotoHash: data.paperPhotoHash ?? null,
         policyType: data.policyType,
         durationMonths: data.durationMonths,
         exclusions: data.exclusions ?? "",
@@ -94,7 +104,11 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    const registered = await registerWarranty(warranty.id, session.sub);
+    const registered = await registerWarranty(
+      warranty.id,
+      session.sub,
+      data.stockItemId
+    );
     return jsonOk(registered, 201);
   } catch (error) {
     return handleApiError(error);

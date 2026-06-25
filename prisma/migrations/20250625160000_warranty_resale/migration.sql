@@ -1,0 +1,6 @@
+-- Warranty resale transfer fields
+ALTER TABLE "Warranty" ADD COLUMN IF NOT EXISTS "resaleToPhone" TEXT;
+ALTER TABLE "Warranty" ADD COLUMN IF NOT EXISTS "resaleToName" TEXT;
+ALTER TABLE "Warranty" ADD COLUMN IF NOT EXISTS "resaleAmount" DOUBLE PRECISION;
+ALTER TABLE "Warranty" ADD COLUMN IF NOT EXISTS "previousBuyerId" TEXT;
+ALTER TABLE "Warranty" ADD COLUMN IF NOT EXISTS "resaleCount" INTEGER NOT NULL DEFAULT 0;

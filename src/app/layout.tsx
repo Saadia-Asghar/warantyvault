@@ -6,6 +6,7 @@ import { PageBackBar } from "@/components/back-button";
 import { DemoModeBanner } from "@/components/demo-mode-banner";
 import { PushNotificationsBanner } from "@/components/push-notifications-banner";
 import { PwaInstallBanner } from "@/components/pwa-install-banner";
+import { HelpFaqPanel } from "@/components/help-faq-panel";
 import { BRAND } from "@/lib/copy";
 
 export const dynamic = "force-dynamic";
@@ -34,7 +35,7 @@ export const metadata: Metadata = {
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
-    title: "WarrantyVault PK",
+    title: BRAND.name,
     statusBarStyle: "default",
   },
 };
@@ -56,6 +57,7 @@ export default function RootLayout({
           <DemoModeBanner />
           <PushNotificationsBanner />
           <PwaInstallBanner />
+          <HelpFaqPanel />
           {children}
         </ThemeProvider>
       </body>

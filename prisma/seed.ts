@@ -15,6 +15,8 @@ async function main() {
   await prisma.reminderLog.deleteMany();
   await prisma.fraudFlag.deleteMany();
   await prisma.chainRecord.deleteMany();
+  await prisma.stockItem.deleteMany();
+  await prisma.stockDispatch.deleteMany();
   await prisma.warranty.deleteMany();
   await prisma.policyTemplate.deleteMany();
   await prisma.companyPolicyTemplate.deleteMany();
@@ -151,6 +153,10 @@ async function main() {
     policyType: "REPAIR_ONLY",
     warrantyCode,
     termsEn: warrantyTermsEn,
+    purchaseAmount: 85000,
+    paymentMethod: "CASH",
+    paymentReference: "",
+    paperPhotoHash: "",
   });
 
   const warranty = await prisma.warranty.create({
@@ -163,6 +169,7 @@ async function main() {
       category: "MOBILE",
       serialImei: "356789012345678",
       purchaseAmount: 85000,
+      paymentMethod: "CASH",
       policyType: "REPAIR_ONLY",
       durationMonths: 6,
       exclusions: "Water damage, physical damage",
@@ -206,6 +213,46 @@ async function main() {
     where: { id: warranty.id },
     data: { chainTxRegister: regTx, chainTxTransfer: transferTx },
   });
+
+  const dispatch = await prisma.stockDispatch.create({
+    data: {
+      companyId: company.id,
+      shopId: issuingShop.id,
+      reference: "DEMO-DSP-001",
+      status: "RECEIVED",
+      receivedAt: new Date(),
+      items: {
+        create: [
+          {
+            companyId: company.id,
+            shopId: issuingShop.id,
+            productName: "Samsung Galaxy A15",
+            category: "MOBILE",
+            serialImei: "356789012345679",
+            status: "IN_STOCK",
+          },
+          {
+            companyId: company.id,
+            shopId: issuingShop.id,
+            productName: "Samsung Galaxy A15",
+            category: "MOBILE",
+            serialImei: "356789012345680",
+            status: "IN_STOCK",
+          },
+          {
+            companyId: company.id,
+            shopId: issuingShop.id,
+            productName: "Haier Refrigerator 12CF",
+            category: "APPLIANCE",
+            sku: "HR-12CF",
+            status: "IN_STOCK",
+          },
+        ],
+      },
+    },
+  });
+
+  console.log("Stock dispatch:", dispatch.id, "— 3 units in G-6 inventory");
 
   console.log("Done!");
   console.log("Brand:", "dollarsmobile@demo.pk / demo1234");

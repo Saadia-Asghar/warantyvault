@@ -3,12 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { BarChart3, FileText, MapPin, Shield } from "lucide-react";
+import { BarChart3, MapPin, Package, Shield } from "lucide-react";
 
 const tabs = [
   { href: "/company", label: "Outlets", icon: MapPin, match: (p: string) => p === "/company" },
-  { href: "/company/warranties", label: "Warranties", icon: Shield, match: (p: string) => p.startsWith("/company/warranties") || p.startsWith("/company/fraud") },
-  { href: "/company/policies", label: "Policies", icon: FileText, match: (p: string) => p === "/company/policies" },
+  { href: "/company/stock", label: "Stock", icon: Package, match: (p: string) => p.startsWith("/company/stock") },
+  { href: "/company/warranties", label: "Sales", icon: Shield, match: (p: string) => p.startsWith("/company/warranties") || p.startsWith("/company/fraud") },
   { href: "/company/analytics", label: "Insights", icon: BarChart3, match: (p: string) => p === "/company/analytics" },
 ];
 

@@ -1,5 +1,6 @@
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { formatDate, warrantyStatusLabel } from "@/lib/utils";
+import { paymentMethodLabel } from "@/lib/copy";
 
 type WarrantyPdfInput = {
   warrantyCode: string;
@@ -9,6 +10,10 @@ type WarrantyPdfInput = {
   serialImei: string | null;
   buyerName: string | null;
   buyerPhone: string | null;
+  purchaseAmount: number | null;
+  paymentMethod: string | null;
+  paymentReference: string | null;
+  paperPhotoHash: string | null;
   startDate: Date;
   endDate: Date;
   termsEn: string;
@@ -56,9 +61,9 @@ export async function buildWarrantyPdf(
     y -= size + 6;
   };
 
-  page.drawText("WarrantyVault PK", { x: margin, y, size: 10, font: regular, color: accent });
+  page.drawText("ShopSeal PK", { x: margin, y, size: 10, font: regular, color: accent });
   y -= 14;
-  draw("DIGITAL WARRANTY CERTIFICATE", 16, bold);
+  draw("DIGITAL SALE & WARRANTY CERTIFICATE", 16, bold);
   draw("For consumer court / shop dispute evidence", 9, regular, muted);
   y -= 8;
 
@@ -76,6 +81,10 @@ export async function buildWarrantyPdf(
     ["Brand network", w.company?.brandName ?? "Standalone shop"],
     ["Policy", w.policyType],
     ["IMEI / serial", w.serialImei ?? "—"],
+    ["Sale amount (PKR)", w.purchaseAmount != null ? w.purchaseAmount.toLocaleString("en-PK") : "—"],
+    ["Payment", paymentMethodLabel(w.paymentMethod)],
+    ...(w.paymentReference ? [["Payment ref", w.paymentReference] as [string, string]] : []),
+    ...(w.paperPhotoHash ? [["Paper card photo hash", `${w.paperPhotoHash.slice(0, 16)}…`] as [string, string]] : []),
     ["Start date", formatDate(w.startDate)],
     ["Expiry date", formatDate(w.endDate)],
     ["Verify online", verifyUrl],

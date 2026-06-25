@@ -11,8 +11,10 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Camera } from "lucide-react";
 import { PtaImeiCheckLink } from "@/components/pta-imei-link";
+import { PAYMENT_METHODS } from "@/lib/copy";
+import { hashFileSha256 } from "@/lib/client-hash";
 
 type Policy = {
   id: string;
@@ -26,19 +28,34 @@ type Policy = {
   network?: boolean;
 };
 
-const STEPS = ["Buyer", "Product", "Review"];
+type StockRow = {
+  id: string;
+  productName: string;
+  category: string;
+  serialImei: string | null;
+  sku: string | null;
+};
+
+const STEPS = ["Buyer", "Product", "Sale", "Review"];
 
 export default function IssueWarrantyPage() {
   const [step, setStep] = useState(0);
   const [policies, setPolicies] = useState<Policy[]>([]);
+  const [inventory, setInventory] = useState<StockRow[]>([]);
   const [loading, setLoading] = useState(false);
+  const [hashingPhoto, setHashingPhoto] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState<{ code: string; id: string; hash: string } | null>(null);
   const [form, setForm] = useState({
+    stockItemId: "",
     productName: "",
     category: "MOBILE",
     serialImei: "",
     purchaseAmount: "",
+    paymentMethod: "CASH",
+    paymentReference: "",
+    paperPhotoHash: "",
+    paperPhotoName: "",
     policyType: "REPAIR_ONLY",
     durationMonths: 6,
     exclusions: "Water damage, physical damage, unauthorized repair",
@@ -58,6 +75,11 @@ export default function IssueWarrantyPage() {
           setPolicies([...company, ...shop]);
         }
       });
+    fetch("/api/shop/stock")
+      .then((r) => r.json())
+      .then((j) => {
+        if (j.success) setInventory(j.data.inventory ?? []);
+      });
   }, []);
 
   function applyPolicy(p: Policy) {
@@ -72,6 +94,41 @@ export default function IssueWarrantyPage() {
     });
   }
 
+  function selectStock(item: StockRow) {
+    setForm({
+      ...form,
+      stockItemId: item.id,
+      productName: item.productName,
+      category: item.category,
+      serialImei: item.serialImei ?? "",
+    });
+  }
+
+  async function onPaperPhoto(file: File | null) {
+    if (!file) return;
+    setHashingPhoto(true);
+    try {
+      const hash = await hashFileSha256(file);
+      setForm({ ...form, paperPhotoHash: hash, paperPhotoName: file.name });
+    } catch {
+      setError("Could not hash photo — try another image");
+    } finally {
+      setHashingPhoto(false);
+    }
+  }
+
+  function canAdvance(): boolean {
+    if (step === 0) return form.buyerPhone.length >= 10 && form.buyerName.length >= 2;
+    if (step === 1) return form.productName.length >= 2;
+    if (step === 2) {
+      const amount = parseFloat(form.purchaseAmount);
+      if (!amount || amount <= 0) return false;
+      if (form.paymentMethod === "RAAST" && !form.paymentReference.trim()) return false;
+      return true;
+    }
+    return true;
+  }
+
   async function submit() {
     setLoading(true);
     setError("");
@@ -81,13 +138,26 @@ export default function IssueWarrantyPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...form,
-          purchaseAmount: form.purchaseAmount ? parseFloat(form.purchaseAmount) : undefined,
+          productName: form.productName,
+          category: form.category,
+          serialImei: form.serialImei || undefined,
+          purchaseAmount: parseFloat(form.purchaseAmount),
+          paymentMethod: form.paymentMethod,
+          paymentReference: form.paymentReference || undefined,
+          paperPhotoHash: form.paperPhotoHash || undefined,
+          stockItemId: form.stockItemId || undefined,
+          policyType: form.policyType,
+          durationMonths: form.durationMonths,
+          exclusions: form.exclusions,
+          termsEn: form.termsEn,
+          termsUr: form.termsUr,
+          buyerPhone: form.buyerPhone,
+          buyerName: form.buyerName,
         }),
       });
       const json = await res.json();
       if (!json.success) {
-        setError(json.error ?? "Failed to issue warranty");
+        setError(json.error ?? "Failed to record sale");
         return;
       }
       setSuccess({
@@ -105,7 +175,7 @@ export default function IssueWarrantyPage() {
   return (
     <div className="min-h-screen bg-[var(--bg-deep)] pb-24 md:pb-8">
       <ContextBanner role="shop" />
-      <ShopTopBar title="Issue warranty" subtitle={`Step ${step + 1} of 3 · ${STEPS[step]}`} />
+      <ShopTopBar title="Record sale & warranty" subtitle={`Step ${step + 1} of 4 · ${STEPS[step]}`} />
       <main className="mx-auto max-w-lg px-4 py-6">
         <div className="mb-4 flex gap-2">
           {STEPS.map((s, i) => (
@@ -142,7 +212,7 @@ export default function IssueWarrantyPage() {
               className="mt-4 rounded-xl border border-[var(--pastel-mint)] bg-[var(--pastel-mint)] p-5"
             >
               <CheckCircle2 className="mb-2 h-10 w-10 text-[var(--accent)]" />
-              <p className="font-semibold text-[var(--text-primary)]">Warranty registered</p>
+              <p className="font-semibold text-[var(--text-primary)]">Sale sealed & warranty sent</p>
               <p className="mt-1 font-mono text-sm">{success.code}</p>
               <div className="mt-4 flex justify-center rounded-2xl bg-white p-4">
                 <QrDisplay
@@ -156,10 +226,21 @@ export default function IssueWarrantyPage() {
                 onClick={() => {
                   setSuccess(null);
                   setStep(0);
-                  setForm({ ...form, productName: "", serialImei: "", buyerPhone: "", buyerName: "" });
+                  setForm({
+                    ...form,
+                    stockItemId: "",
+                    productName: "",
+                    serialImei: "",
+                    purchaseAmount: "",
+                    paymentReference: "",
+                    paperPhotoHash: "",
+                    paperPhotoName: "",
+                    buyerPhone: "",
+                    buyerName: "",
+                  });
                 }}
               >
-                Issue another
+                Record another sale
               </Button>
             </motion.div>
           ) : (
@@ -173,6 +254,9 @@ export default function IssueWarrantyPage() {
               >
                 {step === 0 && (
                   <>
+                    <p className="text-xs text-[var(--text-muted)]">
+                      Buyer must be registered in the app (phone number).
+                    </p>
                     <Input
                       label="Buyer phone"
                       required
@@ -189,11 +273,37 @@ export default function IssueWarrantyPage() {
                 )}
                 {step === 1 && (
                   <>
+                    {inventory.length > 0 && (
+                      <div>
+                        <label className="label-field">Pick from inventory (optional)</label>
+                        <div className="mt-2 max-h-40 space-y-2 overflow-y-auto">
+                          {inventory.map((item) => (
+                            <button
+                              key={item.id}
+                              type="button"
+                              onClick={() => selectStock(item)}
+                              className={`w-full rounded-lg border px-3 py-2 text-left text-sm transition ${
+                                form.stockItemId === item.id
+                                  ? "border-[var(--accent)] bg-[var(--pastel-mint)]"
+                                  : "border-[var(--border)] bg-[var(--bg-elevated)]"
+                              }`}
+                            >
+                              <span className="font-medium">{item.productName}</span>
+                              {item.serialImei && (
+                                <span className="ml-2 font-mono text-xs text-[var(--text-muted)]">
+                                  {item.serialImei}
+                                </span>
+                              )}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                     <Input
                       label="Product name"
                       required
                       value={form.productName}
-                      onChange={(e) => setForm({ ...form, productName: e.target.value })}
+                      onChange={(e) => setForm({ ...form, productName: e.target.value, stockItemId: "" })}
                     />
                     <Input
                       label="Serial / IMEI"
@@ -224,6 +334,64 @@ export default function IssueWarrantyPage() {
                   </>
                 )}
                 {step === 2 && (
+                  <>
+                    <Input
+                      label="Sale amount (PKR)"
+                      required
+                      type="number"
+                      min="1"
+                      value={form.purchaseAmount}
+                      onChange={(e) => setForm({ ...form, purchaseAmount: e.target.value })}
+                    />
+                    <div>
+                      <label className="label-field">Payment method</label>
+                      <select
+                        className="input-field"
+                        value={form.paymentMethod}
+                        onChange={(e) => setForm({ ...form, paymentMethod: e.target.value })}
+                      >
+                        {PAYMENT_METHODS.map((m) => (
+                          <option key={m.value} value={m.value}>
+                            {m.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    {(form.paymentMethod === "RAAST" || form.paymentMethod === "CARD") && (
+                      <Input
+                        label="Payment reference"
+                        required={form.paymentMethod === "RAAST"}
+                        value={form.paymentReference}
+                        onChange={(e) => setForm({ ...form, paymentReference: e.target.value })}
+                        placeholder="Raast ID or transaction ref"
+                      />
+                    )}
+                    <div>
+                      <label className="label-field">Paper warranty card photo (optional)</label>
+                      <label className="mt-2 flex cursor-pointer items-center gap-2 rounded-lg border border-dashed border-[var(--border)] px-4 py-3 text-sm text-[var(--text-muted)] hover:border-[var(--accent)]">
+                        <Camera className="h-4 w-4" />
+                        {hashingPhoto
+                          ? "Hashing photo…"
+                          : form.paperPhotoName
+                            ? `Sealed: ${form.paperPhotoName}`
+                            : "Take or upload photo — stored as SHA-256 only"}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          capture="environment"
+                          className="hidden"
+                          onChange={(e) => void onPaperPhoto(e.target.files?.[0] ?? null)}
+                        />
+                      </label>
+                      {form.paperPhotoHash && (
+                        <p className="mt-1 font-mono text-[10px] text-[var(--text-tertiary)]">
+                          {form.paperPhotoHash.slice(0, 24)}…
+                        </p>
+                      )}
+                    </div>
+                  </>
+                )}
+                {step === 3 && (
                   <div className="space-y-2 text-sm text-[var(--text-muted)]">
                     <p>
                       <strong className="text-[var(--text-primary)]">Buyer:</strong> {form.buyerName} ·{" "}
@@ -233,9 +401,17 @@ export default function IssueWarrantyPage() {
                       <strong className="text-[var(--text-primary)]">Product:</strong> {form.productName}
                     </p>
                     <p>
+                      <strong className="text-[var(--text-primary)]">Sale:</strong> PKR{" "}
+                      {parseFloat(form.purchaseAmount).toLocaleString("en-PK")} ·{" "}
+                      {PAYMENT_METHODS.find((m) => m.value === form.paymentMethod)?.label}
+                    </p>
+                    <p>
                       <strong className="text-[var(--text-primary)]">Duration:</strong> {form.durationMonths}{" "}
                       months
                     </p>
+                    {form.paperPhotoHash && (
+                      <p className="text-xs text-[var(--accent)]">Paper card photo hash included in seal</p>
+                    )}
                     <p className="text-xs leading-relaxed">{form.termsEn}</p>
                   </div>
                 )}
@@ -246,13 +422,17 @@ export default function IssueWarrantyPage() {
                       Back
                     </Button>
                   )}
-                  {step < 2 ? (
-                    <Button className="flex-1" onClick={() => setStep(step + 1)}>
+                  {step < 3 ? (
+                    <Button
+                      className="flex-1"
+                      disabled={!canAdvance()}
+                      onClick={() => setStep(step + 1)}
+                    >
                       Next
                     </Button>
                   ) : (
                     <Button className="flex-1" loading={loading} onClick={() => void submit()}>
-                      Register & transfer
+                      Seal sale & send warranty
                     </Button>
                   )}
                 </div>
@@ -260,7 +440,10 @@ export default function IssueWarrantyPage() {
             </AnimatePresence>
           )}
         </Card>
-        <Link href="/shop/policies" className="btn-ghost mt-4 block text-center text-xs">
+        <Link href="/shop/stock" className="btn-ghost mt-4 block text-center text-xs">
+          View inventory from brand
+        </Link>
+        <Link href="/shop/policies" className="btn-ghost mt-2 block text-center text-xs">
           Manage policy templates
         </Link>
       </main>

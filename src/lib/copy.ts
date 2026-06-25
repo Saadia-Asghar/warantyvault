@@ -1,29 +1,30 @@
 /** Central brand copy — one source of truth */
 export const BRAND = {
-  name: "WarrantyVault PK",
-  shortName: "WarrantyVault",
-  tagline: "Digital shop warranties for Pakistan",
-  headline: "Your warranty card, on your phone.",
+  name: "ShopSeal PK",
+  shortName: "ShopSeal",
+  legalName: "WarrantyVault PK",
+  tagline: "Digital shop sale & warranty records for Pakistan",
+  headline: "Every sale sealed. Every warranty on the phone.",
   subhead:
-    "Buy at one outlet. Claim at any approved shop in the same brand network. Verify with QR — no paper to lose.",
-  footer: "Shop warranty registry — not official OEM or PTA device warranty.",
+    "Company dispatches stock → shop records sale amount + warranty → buyer gets proof in their wallet. One hash locks price, terms, and optional paper card photo.",
+  footer: "Shop sale & warranty registry — not official OEM, PTA, or payment processing.",
   demoLabel: "Demo mode — sample data only. Do not use for real customers.",
 } as const;
 
 export const ROLE_COPY = {
   buyer: {
-    title: "Your warranty wallet",
-    subtitle: "View warranties, find outlets, scan QR, chat with shops",
-    dashboard: "My warranties",
+    title: "Your purchase wallet",
+    subtitle: "View purchases, warranties, find outlets, scan QR, chat with shops",
+    dashboard: "My purchases",
   },
   shop: {
     title: "Outlet dashboard",
-    subtitle: "Issue warranties, verify QR, handle claims, reply to customers",
-    dashboard: "Issued today",
+    subtitle: "Receive stock, record sales, issue warranties, verify QR, handle claims",
+    dashboard: "Sales today",
   },
   company: {
     title: "Brand network",
-    subtitle: "Approve outlets, set policies, monitor warranties and fraud",
+    subtitle: "Dispatch stock to outlets, approve shops, monitor sales and warranties",
     dashboard: "Network overview",
   },
   admin: {
@@ -32,3 +33,14 @@ export const ROLE_COPY = {
     dashboard: "Admin console",
   },
 } as const;
+
+export const PAYMENT_METHODS = [
+  { value: "CASH", label: "Cash" },
+  { value: "RAAST", label: "Raast / bank transfer" },
+  { value: "CARD", label: "Card" },
+  { value: "OTHER", label: "Other" },
+] as const;
+
+export function paymentMethodLabel(method: string | null | undefined): string {
+  return PAYMENT_METHODS.find((m) => m.value === method)?.label ?? method ?? "—";
+}

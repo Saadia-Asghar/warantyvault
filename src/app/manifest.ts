@@ -2,9 +2,9 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "WarrantyVault PK",
-    short_name: "WarrantyVault",
-    description: "Digital shop warranties for Pakistan — scan QR, find nearby outlets.",
+    name: "ShopSeal PK",
+    short_name: "ShopSeal",
+    description: "Digital shop sale & warranty records for Pakistan — seal sales, scan QR, find outlets.",
     start_url: "/",
     display: "standalone",
     background_color: "#fdf9f5",

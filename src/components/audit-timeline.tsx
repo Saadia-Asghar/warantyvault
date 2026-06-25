@@ -16,6 +16,7 @@ type AuditEvent = {
 const labels: Record<string, string> = {
   WARRANTY_REGISTER: "Registered on registry",
   WARRANTY_TRANSFER: "Transferred to buyer",
+  WARRANTY_RESALE: "Resold to new owner",
   WARRANTY_REVOKE: "Revoked",
   CLAIM_OPEN: "Claim opened",
   CLAIM_UPDATE: "Claim updated",

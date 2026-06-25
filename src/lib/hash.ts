@@ -1,6 +1,6 @@
 import { createHash, randomBytes } from "crypto";
 
-export function computeWarrantyHash(payload: {
+export type WarrantyHashPayload = {
   companyId: string;
   shopId: string;
   serialImei: string;
@@ -11,7 +11,18 @@ export function computeWarrantyHash(payload: {
   policyType: string;
   warrantyCode: string;
   termsEn: string;
-}): string {
+  purchaseAmount?: number | null;
+  paymentMethod?: string | null;
+  paymentReference?: string | null;
+  paperPhotoHash?: string | null;
+};
+
+function amountSegment(amount: number | null | undefined): string {
+  return (amount ?? 0).toFixed(2);
+}
+
+/** v2 — warranty terms only (pre–sale record) */
+export function computeWarrantyHashV2(payload: Omit<WarrantyHashPayload, "purchaseAmount" | "paymentMethod" | "paymentReference" | "paperPhotoHash">): string {
   const raw = [
     payload.companyId || "STANDALONE",
     payload.shopId,
@@ -23,6 +34,28 @@ export function computeWarrantyHash(payload: {
     payload.policyType,
     payload.warrantyCode,
     payload.termsEn,
+  ].join("|");
+
+  return createHash("sha256").update(raw).digest("hex");
+}
+
+/** v3 — full sale + warranty record (amount, payment, paper photo hash) */
+export function computeWarrantyHash(payload: WarrantyHashPayload): string {
+  const raw = [
+    payload.companyId || "STANDALONE",
+    payload.shopId,
+    payload.serialImei || "NO_SERIAL",
+    payload.buyerPhone,
+    payload.productName,
+    payload.startUnix.toString(),
+    payload.endUnix.toString(),
+    payload.policyType,
+    payload.warrantyCode,
+    payload.termsEn,
+    amountSegment(payload.purchaseAmount),
+    payload.paymentMethod ?? "",
+    payload.paymentReference ?? "",
+    payload.paperPhotoHash ?? "",
   ].join("|");
 
   return createHash("sha256").update(raw).digest("hex");
@@ -63,7 +96,11 @@ export function recomputeWarrantyHashFromRow(warranty: {
   policyType: string;
   warrantyCode: string;
   termsEn: string;
-}): { v2: string; legacy: string } {
+  purchaseAmount?: number | null;
+  paymentMethod?: string | null;
+  paymentReference?: string | null;
+  paperPhotoHash?: string | null;
+}): { v3: string; v2: string; legacy: string } {
   const startUnix = Math.floor(warranty.startDate.getTime() / 1000);
   const endUnix = Math.floor(warranty.endDate.getTime() / 1000);
   const base = {
@@ -75,14 +112,28 @@ export function recomputeWarrantyHashFromRow(warranty: {
     startUnix,
     endUnix,
     policyType: warranty.policyType,
+    warrantyCode: warranty.warrantyCode,
+    termsEn: warranty.termsEn,
   };
   return {
-    v2: computeWarrantyHash({
+    v3: computeWarrantyHash({
       ...base,
-      warrantyCode: warranty.warrantyCode,
-      termsEn: warranty.termsEn,
+      purchaseAmount: warranty.purchaseAmount,
+      paymentMethod: warranty.paymentMethod,
+      paymentReference: warranty.paymentReference,
+      paperPhotoHash: warranty.paperPhotoHash,
     }),
-    legacy: computeWarrantyHashLegacy(base),
+    v2: computeWarrantyHashV2(base),
+    legacy: computeWarrantyHashLegacy({
+      companyId: base.companyId,
+      shopId: base.shopId,
+      serialImei: base.serialImei,
+      buyerPhone: base.buyerPhone,
+      productName: base.productName,
+      startUnix,
+      endUnix,
+      policyType: base.policyType,
+    }),
   };
 }
 
@@ -98,9 +149,17 @@ export function validateWarrantyHash(warranty: {
   policyType: string;
   warrantyCode: string;
   termsEn: string;
+  purchaseAmount?: number | null;
+  paymentMethod?: string | null;
+  paymentReference?: string | null;
+  paperPhotoHash?: string | null;
 }): boolean {
-  const { v2, legacy } = recomputeWarrantyHashFromRow(warranty);
-  return warranty.warrantyHash === v2 || warranty.warrantyHash === legacy;
+  const { v3, v2, legacy } = recomputeWarrantyHashFromRow(warranty);
+  return (
+    warranty.warrantyHash === v3 ||
+    warranty.warrantyHash === v2 ||
+    warranty.warrantyHash === legacy
+  );
 }
 
 export function generateTxHash(): string {

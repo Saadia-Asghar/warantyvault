@@ -9,7 +9,7 @@ import { recordAuditEvent } from "@/lib/audit";
 import { notifyBuyerByPhoneWithEmail, notifyUser, resolveEmail } from "@/lib/notify";
 import { sendSms, warrantyIssuedSms } from "@/lib/sms";
 
-const REGISTERED_STATUSES = ["PENDING_TRANSFER", "ACTIVE", "EXPIRED", "REVOKED"];
+const REGISTERED_STATUSES = ["PENDING_TRANSFER", "PENDING_RESALE", "ACTIVE", "EXPIRED", "REVOKED"];
 
 export async function checkDuplicateSerial(
   serialImei: string | null | undefined,
@@ -61,7 +61,11 @@ export async function deliverPendingAlerts(buyerId: string, buyerPhone: string) 
   }
 }
 
-export async function registerWarranty(warrantyId: string, shopId: string) {
+export async function registerWarranty(
+  warrantyId: string,
+  shopId: string,
+  stockItemId?: string
+) {
   const warranty = await prisma.warranty.findFirst({
     where: { id: warrantyId, shopId },
   });
@@ -97,6 +101,10 @@ export async function registerWarranty(warrantyId: string, shopId: string) {
     policyType: warranty.policyType,
     warrantyCode: warranty.warrantyCode,
     termsEn: warranty.termsEn,
+    purchaseAmount: warranty.purchaseAmount,
+    paymentMethod: warranty.paymentMethod,
+    paymentReference: warranty.paymentReference,
+    paperPhotoHash: warranty.paperPhotoHash,
   });
 
   const { txHash } = await recordAuditEvent({
@@ -126,6 +134,13 @@ export async function registerWarranty(warrantyId: string, shopId: string) {
     },
     include: { shop: true },
   });
+
+  if (stockItemId) {
+    await prisma.stockItem.updateMany({
+      where: { id: stockItemId, shopId, status: "IN_STOCK" },
+      data: { status: "SOLD", warrantyId, soldAt: new Date() },
+    });
+  }
 
   if (updated.buyerPhone) {
     const notified = await notifyBuyerByPhoneWithEmail(updated.buyerPhone, {
@@ -200,6 +215,203 @@ export async function acceptWarrantyTransfer(warrantyId: string, buyerId: string
   });
 
   return result;
+}
+
+export async function initiateResaleTransfer(
+  warrantyId: string,
+  sellerBuyerId: string,
+  input: { newBuyerPhone: string; newBuyerName: string; resaleAmount?: number }
+) {
+  const warranty = await prisma.warranty.findUnique({
+    where: { id: warrantyId },
+    include: { shop: true, buyer: true },
+  });
+
+  if (!warranty) throw new Error("Warranty not found");
+  if (warranty.buyerId !== sellerBuyerId) {
+    throw new Error("Only the current owner can transfer this warranty");
+  }
+  if (warranty.status !== "ACTIVE") {
+    throw new Error("Only active warranties can be transferred on resale");
+  }
+  if (warranty.endDate < new Date()) {
+    throw new Error("Cannot transfer an expired warranty");
+  }
+
+  const openClaim = await prisma.claim.findFirst({
+    where: { warrantyId, status: { in: ["OPENED", "IN_REPAIR"] } },
+  });
+  if (openClaim) throw new Error("Close the open claim before transferring");
+
+  const phone = input.newBuyerPhone.trim();
+  if (phone === warranty.buyerPhone) {
+    throw new Error("New owner must be a different phone number");
+  }
+
+  const updated = await prisma.warranty.update({
+    where: { id: warrantyId },
+    data: {
+      status: "PENDING_RESALE",
+      resaleToPhone: phone,
+      resaleToName: input.newBuyerName.trim(),
+      resaleAmount: input.resaleAmount ?? null,
+    },
+    include: { shop: true, buyer: true },
+  });
+
+  await recordAuditEvent({
+    eventType: "WARRANTY_RESALE",
+    actorId: sellerBuyerId,
+    actorRole: "buyer",
+    entityType: "warranty",
+    entityId: warrantyId,
+    warrantyId,
+    warrantyHash: warranty.warrantyHash,
+    payload: {
+      action: "INITIATED",
+      fromBuyerId: sellerBuyerId,
+      fromPhone: warranty.buyerPhone,
+      toPhone: phone,
+      toName: input.newBuyerName,
+      resaleAmount: input.resaleAmount ?? null,
+    },
+  });
+
+  const shopEmail = await resolveEmail("shop", warranty.shopId);
+  await notifyUser({
+    userId: warranty.shopId,
+    userRole: "shop",
+    title: "Warranty resale initiated",
+    body: `${warranty.buyer?.name ?? warranty.buyerPhone} is transferring ${warranty.productName} (${warranty.warrantyCode}) to ${input.newBuyerName} (${phone}).`,
+    type: "WARRANTY_RESALE",
+    linkUrl: `/shop/records?q=${encodeURIComponent(warranty.warrantyCode)}`,
+    email: shopEmail,
+  });
+
+  await notifyBuyerByPhoneWithEmail(phone, {
+    title: "Warranty transfer waiting",
+    body: `${warranty.buyer?.name ?? "A seller"} wants to transfer ${warranty.productName} to you. Open your wallet to accept.`,
+    type: "WARRANTY_RESALE",
+    linkUrl: "/buyer",
+  });
+
+  if (warranty.companyId) {
+    const companyEmail = await resolveEmail("company", warranty.companyId);
+    await notifyUser({
+      userId: warranty.companyId,
+      userRole: "company",
+      title: "Unit resale on network warranty",
+      body: `${warranty.productName} (${warranty.warrantyCode}) is being transferred from ${warranty.buyerPhone} to ${phone} at ${warranty.shop.shopName}.`,
+      type: "WARRANTY_RESALE",
+      linkUrl: "/company/warranties",
+      email: companyEmail,
+    });
+  }
+
+  return updated;
+}
+
+export async function acceptResaleTransfer(warrantyId: string, buyerId: string) {
+  const warranty = await prisma.warranty.findUnique({
+    where: { id: warrantyId },
+    include: { shop: true, buyer: true },
+  });
+
+  if (!warranty) throw new Error("Warranty not found");
+  if (warranty.status !== "PENDING_RESALE") {
+    throw new Error("This warranty is not pending resale acceptance");
+  }
+
+  const buyer = await prisma.buyer.findUnique({ where: { id: buyerId } });
+  if (!buyer) throw new Error("Buyer not found");
+
+  if (!warranty.resaleToPhone || warranty.resaleToPhone !== buyer.phone) {
+    throw new Error("This resale transfer was sent to a different phone number");
+  }
+
+  const previousBuyer = warranty.buyer;
+
+  const { txHash } = await recordAuditEvent({
+    eventType: "WARRANTY_RESALE",
+    actorId: buyerId,
+    actorRole: "buyer",
+    entityType: "warranty",
+    entityId: warrantyId,
+    warrantyId,
+    warrantyHash: warranty.warrantyHash,
+    payload: {
+      action: "ACCEPTED",
+      fromBuyerId: warranty.buyerId,
+      fromPhone: warranty.buyerPhone,
+      toBuyerId: buyerId,
+      toPhone: buyer.phone,
+      resaleAmount: warranty.resaleAmount,
+      resaleCount: warranty.resaleCount + 1,
+    },
+  });
+
+  const now = new Date();
+  const status = warranty.endDate < now ? "EXPIRED" : "ACTIVE";
+
+  const result = await prisma.warranty.update({
+    where: { id: warrantyId },
+    data: {
+      buyerId,
+      buyerPhone: buyer.phone,
+      buyerName: buyer.name,
+      previousBuyerId: warranty.buyerId,
+      resaleCount: { increment: 1 },
+      resaleToPhone: null,
+      resaleToName: null,
+      resaleAmount: null,
+      status,
+      chainTxTransfer: txHash,
+    },
+    include: { shop: true, buyer: true },
+  });
+
+  const shopEmail = await resolveEmail("shop", result.shopId);
+  await notifyUser({
+    userId: result.shopId,
+    userRole: "shop",
+    title: "Warranty resold — new owner",
+    body: `${previousBuyer?.name ?? warranty.buyerPhone} resold ${result.productName} to ${buyer.name} (${buyer.phone}). Warranty ${result.warrantyCode} is now with the new buyer.`,
+    type: "WARRANTY_RESALE",
+    linkUrl: "/shop/records",
+    email: shopEmail,
+  });
+
+  if (previousBuyer) {
+    const prevEmail = await resolveEmail("buyer", previousBuyer.id);
+    await notifyUser({
+      userId: previousBuyer.id,
+      userRole: "buyer",
+      title: "Resale transfer complete",
+      body: `${buyer.name} accepted your transfer of ${result.productName}.`,
+      type: "WARRANTY_RESALE",
+      linkUrl: "/buyer",
+      email: prevEmail,
+    });
+  }
+
+  return result;
+}
+
+export async function cancelResaleTransfer(warrantyId: string, sellerBuyerId: string) {
+  const warranty = await prisma.warranty.findUnique({ where: { id: warrantyId } });
+  if (!warranty) throw new Error("Warranty not found");
+  if (warranty.buyerId !== sellerBuyerId) throw new Error("Not authorized");
+  if (warranty.status !== "PENDING_RESALE") throw new Error("No pending resale to cancel");
+
+  return prisma.warranty.update({
+    where: { id: warrantyId },
+    data: {
+      status: "ACTIVE",
+      resaleToPhone: null,
+      resaleToName: null,
+      resaleAmount: null,
+    },
+  });
 }
 
 export async function revokeWarranty(
@@ -374,6 +586,10 @@ export async function openClaim(
 
   if (!verification.valid) {
     throw new Error(verification.expired ? "Warranty has expired" : "Warranty is not valid");
+  }
+
+  if (verification.warranty.status === "PENDING_RESALE") {
+    throw new Error("Warranty is pending resale transfer — claim is paused");
   }
 
   const existing = await prisma.claim.findFirst({

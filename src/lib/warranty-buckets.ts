@@ -34,7 +34,7 @@ export function latestClaim(claims?: ClaimLike[]) {
 }
 
 export function getWarrantyBucket(w: WarrantyLike): WarrantyBucket {
-  if (w.status === "PENDING_TRANSFER") return "pending";
+  if (w.status === "PENDING_TRANSFER" || w.status === "PENDING_RESALE") return "pending";
   if (w.status === "REVOKED") return "revoked";
   if (w.status === "EXPIRED") return "expired";
 

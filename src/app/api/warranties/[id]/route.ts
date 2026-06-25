@@ -29,7 +29,9 @@ export async function GET(
       requireRole(session, "buyer") &&
       (warranty.buyerId === session.sub ||
         (warranty.status === "PENDING_TRANSFER" &&
-          warranty.buyerPhone === session.phone));
+          warranty.buyerPhone === session.phone) ||
+        (warranty.status === "PENDING_RESALE" &&
+          warranty.resaleToPhone === session.phone));
 
     if (!isShop && !isBuyer && !requireRole(session, "admin")) {
       return jsonError("Unauthorized", 401);

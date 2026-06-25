@@ -23,6 +23,7 @@ export function warrantyStatusLabel(status: string): string {
   const map: Record<string, string> = {
     DRAFT: "Draft",
     PENDING_TRANSFER: "Pending Transfer",
+    PENDING_RESALE: "Pending Resale",
     ACTIVE: "Active",
     EXPIRED: "Expired",
     REVOKED: "Revoked",

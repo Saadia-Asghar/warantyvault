@@ -54,7 +54,11 @@ export const issueWarrantySchema = z.object({
   productName: z.string().min(2).max(200),
   category: z.enum(["MOBILE", "APPLIANCE", "GENERAL"]),
   serialImei: z.string().max(50).optional(),
-  purchaseAmount: z.number().positive().optional(),
+  purchaseAmount: z.number().positive("Sale amount is required"),
+  paymentMethod: z.enum(["CASH", "RAAST", "CARD", "OTHER"]),
+  paymentReference: z.string().max(100).optional(),
+  paperPhotoHash: z.string().length(64).optional(),
+  stockItemId: z.string().optional(),
   policyType: z.enum(["REPAIR_ONLY", "REPAIR_PARTS", "EXCHANGE", "SHOP_CREDIT"]),
   durationMonths: z.number().int().min(1).max(60),
   exclusions: z.string().max(500).optional(),
@@ -62,6 +66,32 @@ export const issueWarrantySchema = z.object({
   termsUr: z.string().min(10).max(2000),
   buyerPhone: z.string().min(10).max(15),
   buyerName: z.string().min(2).max(100),
+});
+
+export const stockDispatchSchema = z.object({
+  shopId: z.string().min(1),
+  reference: z.string().max(50).optional(),
+  items: z
+    .array(
+      z.object({
+        productName: z.string().min(2).max(200),
+        category: z.enum(["MOBILE", "APPLIANCE", "GENERAL"]),
+        serialImei: z.string().max(50).optional(),
+        sku: z.string().max(50).optional(),
+      })
+    )
+    .min(1)
+    .max(100),
+});
+
+export const stockReceiveSchema = z.object({
+  dispatchId: z.string().min(1),
+});
+
+export const resaleTransferSchema = z.object({
+  newBuyerPhone: z.string().min(10).max(15),
+  newBuyerName: z.string().min(2).max(100),
+  resaleAmount: z.number().positive().optional(),
 });
 
 export const claimOpenSchema = z.object({

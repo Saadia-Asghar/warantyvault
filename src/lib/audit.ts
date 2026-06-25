@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 export type AuditEventType =
   | "WARRANTY_REGISTER"
   | "WARRANTY_TRANSFER"
+  | "WARRANTY_RESALE"
   | "WARRANTY_REVOKE"
   | "CLAIM_OPEN"
   | "CLAIM_UPDATE"
@@ -65,6 +66,8 @@ export async function recordAuditEvent(input: {
         ? "REGISTER"
         : input.eventType === "WARRANTY_TRANSFER"
           ? "TRANSFER"
+          : input.eventType === "WARRANTY_RESALE"
+            ? "TRANSFER"
           : input.eventType === "WARRANTY_REVOKE"
             ? "REVOKE"
             : input.eventType.startsWith("CLAIM")

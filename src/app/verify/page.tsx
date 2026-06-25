@@ -154,6 +154,12 @@ function VerifyContent() {
                   <p>Until {formatDate(warranty.endDate)}</p>
                   {warranty.shopName && <p>Shop: {warranty.shopName}</p>}
                   {warranty.brandName && <p>Brand: {warranty.brandName}</p>}
+                  {warranty.purchaseAmount && (
+                    <p>Sale: ₨{Number(warranty.purchaseAmount).toLocaleString("en-PK")}</p>
+                  )}
+                  {warranty.paperPhotoSealed && (
+                    <p className="text-xs text-[var(--accent)]">Paper warranty photo sealed in hash</p>
+                  )}
                 </div>
               )}
             </div>

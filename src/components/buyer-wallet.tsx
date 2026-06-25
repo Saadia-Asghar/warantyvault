@@ -36,6 +36,12 @@ type WalletData = {
   warranties: WarrantyRow[];
   reminders: WarrantyReminder[];
   buckets: Record<WarrantyBucket, WarrantyRow[]>;
+  summary?: {
+    totalPurchases: number;
+    activeWarranties: number;
+    pendingAccept: number;
+    totalSpent: number;
+  };
 };
 
 const TABS: { id: WarrantyBucket; label: string }[] = [
@@ -61,7 +67,7 @@ function statusLine(w: WarrantyRow): string {
   if (w.bucket === "in_claim") return "Claim in progress";
   if (w.bucket === "used") return "Repair or exchange completed";
   if (w.bucket === "expired") return "Expired";
-  if (w.bucket === "pending") return "Tap to accept";
+  if (w.bucket === "pending") return w.status === "PENDING_RESALE" ? "Resale pending" : "Tap to accept";
   return formatDate(w.endDate);
 }
 
@@ -146,25 +152,29 @@ export function BuyerWalletClient({ name }: { name: string }) {
       <main className="mx-auto max-w-lg px-4 py-6">
         {/* Chime balance card → warranty summary */}
         <div className="summary-card">
-          <p className="text-sm text-[var(--text-muted)]">Your coverage</p>
+          <p className="text-sm text-[var(--text-muted)]">Your purchases</p>
           <p className="mt-1 text-3xl font-bold tracking-tight text-[var(--text-primary)]">
-            {summary.active > 0 ? "You're covered" : "No active coverage"}
+            {data?.summary?.totalPurchases ?? 0} product
+            {(data?.summary?.totalPurchases ?? 0) === 1 ? "" : "s"}
           </p>
-          {summary.active > 0 ? (
-            <>
-              <p className="mt-2 text-sm font-medium text-[var(--accent)]">
-                {summary.active} active warrant{summary.active === 1 ? "y" : "ies"}
-                {summary.expiring > 0 && ` · ${summary.expiring} expiring soon`}
-              </p>
-              {summary.nearest !== null && (
-                <p className="mt-1 text-xs text-[var(--text-tertiary)]">
-                  Nearest expiry · {summary.nearest} day{summary.nearest === 1 ? "" : "s"}
-                </p>
-              )}
-            </>
-          ) : (
+          {(data?.summary?.totalSpent ?? 0) > 0 && (
+            <p className="mt-2 text-sm font-medium text-[var(--accent)]">
+              ₨{Math.round(data!.summary!.totalSpent).toLocaleString("en-PK")} total spent
+            </p>
+          )}
+          <p className="mt-1 text-sm text-[var(--text-muted)]">
+            {data?.summary?.activeWarranties ?? summary.active} under warranty
+            {(data?.summary?.pendingAccept ?? 0) > 0 &&
+              ` · ${data!.summary!.pendingAccept} to accept`}
+          </p>
+          {summary.nearest !== null && summary.active > 0 && (
+            <p className="mt-1 text-xs text-[var(--text-tertiary)]">
+              Nearest expiry · {summary.nearest} day{summary.nearest === 1 ? "" : "s"}
+            </p>
+          )}
+          {(data?.summary?.totalPurchases ?? 0) === 0 && (
             <p className="mt-2 text-sm text-[var(--text-muted)]">
-              When a shop issues a warranty to your number, it appears here.
+              When a shop records a sale to your number, it appears here.
             </p>
           )}
           <Link

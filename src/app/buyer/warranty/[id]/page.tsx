@@ -17,11 +17,14 @@ import {
 } from "@/lib/utils";
 import { AuditTimeline } from "@/components/audit-timeline";
 import { WarrantyProofActions } from "@/components/warranty-proof-actions";
-import { ArrowLeft, Check, Copy, ExternalLink, Shield } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { paymentMethodLabel } from "@/lib/copy";
+import { ArrowLeft, Check, Copy, ExternalLink, Repeat, Shield } from "lucide-react";
 
 type WarrantyDetail = {
   id: string;
   warrantyCode: string;
+  buyerId: string | null;
   productName: string;
   policyType: string;
   status: string;
@@ -35,6 +38,14 @@ type WarrantyDetail = {
   purchaseSector: string | null;
   purchaseCity: string | null;
   serialImei: string | null;
+  purchaseAmount: number | null;
+  paymentMethod: string | null;
+  paymentReference: string | null;
+  paperPhotoHash: string | null;
+  resaleToPhone: string | null;
+  resaleToName: string | null;
+  resaleAmount: number | null;
+  resaleCount: number;
   shop: { shopName: string; city: string; phone: string };
   company?: { brandName: string } | null;
   claims: Array<{ id: string; status: string; openedAt: string }>;
@@ -53,6 +64,15 @@ export default function BuyerWarrantyDetailPage() {
   const [warranty, setWarranty] = useState<WarrantyDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [accepting, setAccepting] = useState(false);
+  const [resaleOpen, setResaleOpen] = useState(false);
+  const [resaleForm, setResaleForm] = useState({
+    newBuyerPhone: "",
+    newBuyerName: "",
+    resaleAmount: "",
+  });
+  const [resaleLoading, setResaleLoading] = useState(false);
+  const [myPhone, setMyPhone] = useState<string | null>(null);
+  const [myBuyerId, setMyBuyerId] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState("");
 
@@ -68,19 +88,62 @@ export default function BuyerWarrantyDetailPage() {
 
   useEffect(() => {
     load();
+    fetch("/api/auth/session")
+      .then((r) => r.json())
+      .then((j) => {
+        if (j.success && j.data?.session?.role === "buyer") {
+          setMyBuyerId(j.data.session.sub);
+          setMyPhone(j.data.session.phone ?? null);
+        }
+      });
   }, [load]);
 
   async function accept() {
     setAccepting(true);
-    const res = await fetch(`/api/warranties/${id}`, { method: "POST" });
+    const isResale = warranty?.status === "PENDING_RESALE";
+    const url = isResale
+      ? `/api/warranties/${id}/resale/accept`
+      : `/api/warranties/${id}`;
+    const res = await fetch(url, { method: "POST" });
     const json = await res.json();
     setAccepting(false);
     if (json.success) {
       load();
       router.refresh();
     } else {
-      setError(json.error);
+      setError(json.error ?? "Failed to accept");
     }
+  }
+
+  async function startResale() {
+    setResaleLoading(true);
+    setError("");
+    const res = await fetch(`/api/warranties/${id}/resale`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        newBuyerPhone: resaleForm.newBuyerPhone,
+        newBuyerName: resaleForm.newBuyerName,
+        resaleAmount: resaleForm.resaleAmount
+          ? parseFloat(resaleForm.resaleAmount)
+          : undefined,
+      }),
+    });
+    const json = await res.json();
+    setResaleLoading(false);
+    if (json.success) {
+      setResaleOpen(false);
+      load();
+    } else {
+      setError(json.error ?? "Transfer failed");
+    }
+  }
+
+  async function cancelResale() {
+    setResaleLoading(true);
+    await fetch(`/api/warranties/${id}/resale`, { method: "DELETE" });
+    setResaleLoading(false);
+    load();
   }
 
   function copyHash() {
@@ -185,8 +248,42 @@ export default function BuyerWarrantyDetailPage() {
         {warranty.status === "PENDING_TRANSFER" && (
           <div className="alert-banner alert-banner-warning mt-4">
             <p className="flex-1 text-sm">Accept to add this warranty to your wallet</p>
-            <Button className="btn-primary-sm shrink-0" onClick={accept} loading={accepting}>
+            <Button className="btn-primary-sm shrink-0" onClick={() => void accept()} loading={accepting}>
               Accept
+            </Button>
+          </div>
+        )}
+
+        {warranty.status === "PENDING_RESALE" &&
+          myPhone &&
+          warranty.resaleToPhone === myPhone && (
+          <div className="alert-banner alert-banner-warning mt-4">
+            <p className="flex-1 text-sm">
+              Accept resale transfer for {warranty.productName}
+              {warranty.resaleAmount
+                ? ` · ₨${warranty.resaleAmount.toLocaleString("en-PK")}`
+                : ""}
+            </p>
+            <Button className="btn-primary-sm shrink-0" onClick={() => void accept()} loading={accepting}>
+              Accept resale
+            </Button>
+          </div>
+        )}
+
+        {warranty.status === "PENDING_RESALE" &&
+          myBuyerId &&
+          warranty.buyerId === myBuyerId && (
+          <div className="alert-banner alert-banner-info mt-4">
+            <p className="flex-1 text-sm">
+              Waiting for {warranty.resaleToName} ({warranty.resaleToPhone}) to accept. Shop was notified.
+            </p>
+            <Button
+              variant="secondary"
+              className="shrink-0"
+              onClick={() => void cancelResale()}
+              loading={resaleLoading}
+            >
+              Cancel transfer
             </Button>
           </div>
         )}
@@ -226,6 +323,12 @@ export default function BuyerWarrantyDetailPage() {
             <div className="activity-feed mt-6">
               {[
                 ["Shop", `${warranty.shop.shopName}, ${warranty.shop.city}`],
+                ...(warranty.purchaseAmount
+                  ? [["Sale amount", `₨${warranty.purchaseAmount.toLocaleString("en-PK")}`] as [string, string]]
+                  : []),
+                ...(warranty.paymentMethod
+                  ? [["Payment", paymentMethodLabel(warranty.paymentMethod)] as [string, string]]
+                  : []),
                 ["Policy", policyTypeLabel(warranty.policyType)],
                 ["Started", formatDate(warranty.startDate)],
                 ["Expires", formatDate(warranty.endDate)],
@@ -253,6 +356,61 @@ export default function BuyerWarrantyDetailPage() {
               >
                 View on registry <ExternalLink className="h-3.5 w-3.5" />
               </Link>
+            )}
+
+            {!resaleOpen ? (
+              <button
+                type="button"
+                onClick={() => setResaleOpen(true)}
+                className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-[var(--border)] py-3 text-sm text-[var(--text-muted)] hover:border-[var(--accent)] hover:text-[var(--accent)]"
+              >
+                <Repeat className="h-4 w-4" />
+                Transfer on resale (notify shop)
+              </button>
+            ) : (
+              <div className="mt-6 space-y-3 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-4">
+                <p className="text-sm font-medium text-[var(--text-primary)]">Transfer to new owner</p>
+                <p className="text-xs text-[var(--text-muted)]">
+                  New buyer must be registered with this phone. Shop and brand get notified.
+                </p>
+                <Input
+                  label="New buyer phone"
+                  value={resaleForm.newBuyerPhone}
+                  onChange={(e) => setResaleForm({ ...resaleForm, newBuyerPhone: e.target.value })}
+                />
+                <Input
+                  label="New buyer name"
+                  value={resaleForm.newBuyerName}
+                  onChange={(e) => setResaleForm({ ...resaleForm, newBuyerName: e.target.value })}
+                />
+                <Input
+                  label="Resale amount (PKR, optional)"
+                  type="number"
+                  value={resaleForm.resaleAmount}
+                  onChange={(e) => setResaleForm({ ...resaleForm, resaleAmount: e.target.value })}
+                />
+                <div className="flex gap-2">
+                  <Button variant="secondary" className="flex-1" onClick={() => setResaleOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button
+                    className="flex-1"
+                    loading={resaleLoading}
+                    onClick={() => void startResale()}
+                    disabled={
+                      resaleForm.newBuyerPhone.length < 10 || resaleForm.newBuyerName.length < 2
+                    }
+                  >
+                    Send transfer
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {warranty.resaleCount > 0 && (
+              <p className="mt-3 text-center text-xs text-[var(--text-muted)]">
+                Resold {warranty.resaleCount} time{warranty.resaleCount === 1 ? "" : "s"} — see audit trail below
+              </p>
             )}
           </>
         )}
