@@ -1,6 +1,8 @@
 import { jsonOk } from "@/lib/api";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 /** Public list of brands outlets can apply to join */
 export async function GET() {
   const companies = await prisma.company.findMany({

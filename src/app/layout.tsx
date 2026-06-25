@@ -3,6 +3,8 @@ import { Plus_Jakarta_Sans, IBM_Plex_Mono, Fraunces } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 
+export const dynamic = "force-dynamic";
+
 const plusJakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
   variable: "--font-sans",
