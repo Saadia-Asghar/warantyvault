@@ -4,7 +4,7 @@
 
 /* Paper Trust — warm pastels, light default */
 :root,
-[data-theme="light"] {
+html[data-theme="light"] {
   --bg-deep: #fdf9f5;
   --bg-surface: #ffffff;
   --bg-elevated: #f5f0ea;
@@ -29,7 +29,7 @@
   color-scheme: light;
 }
 
-[data-theme="dark"] {
+html[data-theme="dark"] {
   --bg-deep: #14161c;
   --bg-surface: #1c1f27;
   --bg-elevated: #252932;
@@ -167,7 +167,7 @@ body {
     color: var(--text-primary);
   }
 
-  [data-theme="dark"] .alert-banner-info {
+  html[data-theme="dark"] .alert-banner-info {
     background: var(--pastel-sky);
   }
 

@@ -52,9 +52,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${plusJakarta.variable} ${fraunces.variable} ${ibmPlexMono.variable}`} suppressHydrationWarning>
       <head>
-        <style
+        <script
           dangerouslySetInnerHTML={{
-            __html: `:root{--bg-deep:#fdf9f5;--text-primary:#2d3142;--text-muted:#6b7289;--accent:#d4715a}body{margin:0;background:var(--bg-deep);color:var(--text-primary);font-family:var(--font-sans),system-ui,sans-serif;-webkit-font-smoothing:antialiased}`,
+            __html: `(function(){try{var t=localStorage.getItem('wv_theme');if(t!=='light'&&t!=='dark'){t=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}document.documentElement.setAttribute('data-theme',t)}catch(e){document.documentElement.setAttribute('data-theme','light')}})();`,
           }}
         />
       </head>
