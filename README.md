@@ -6,21 +6,22 @@ Digital shop warranty platform for Pakistani retail — immutable hashes, buyer 
 
 ## Quick start (local)
 
-1. Create a free [Neon](https://neon.tech) PostgreSQL database and copy the connection string.
-2. Copy env file and set secrets:
+1. Create a PostgreSQL database ([Neon](https://neon.tech) or [Supabase](https://supabase.com) free tier).
+2. Copy env file and set credentials:
 
 ```bash
 cd warrantyvault-pk
 cp .env.example .env
-# Edit .env: DATABASE_URL, AUTH_SECRET (32+ chars)
+# Edit .env: DATABASE_URL, DIRECT_URL, AUTH_SECRET (32+ chars)
 ```
 
-3. Install and run:
+**Supabase:** Project Settings → Database → copy **Transaction** URL → `DATABASE_URL`, **Session** URL → `DIRECT_URL`.
+
+3. Install, migrate, and seed:
 
 ```bash
 npm install
-npm run db:push
-npm run db:seed
+npm run db:setup
 npm run dev
 ```
 
@@ -28,16 +29,18 @@ Open [http://localhost:3000](http://localhost:3000)
 
 ## Deploy on Vercel
 
-See **[docs/VERCEL_DEPLOY.md](docs/VERCEL_DEPLOY.md)** for step-by-step instructions.
+- Step-by-step: **[docs/VERCEL_DEPLOY.md](docs/VERCEL_DEPLOY.md)**
+- **Env var checklist:** **[docs/VERCEL_ENV_VARS.md](docs/VERCEL_ENV_VARS.md)** ← what to paste in Vercel
 
 **Required Vercel env vars:**
 
 | Variable | Purpose |
 |----------|---------|
-| `DATABASE_URL` | PostgreSQL connection string |
+| `DATABASE_URL` | Pooled PostgreSQL (app queries) |
+| `DIRECT_URL` | Direct PostgreSQL (migrations at build) |
 | `AUTH_SECRET` | JWT signing secret (32+ characters) |
 | `NEXT_PUBLIC_APP_URL` | `https://your-app.vercel.app` |
-| `RESEND_API_KEY` | Email notifications (optional but recommended) |
+| `RESEND_API_KEY` | Email notifications (optional) |
 | `EMAIL_FROM` | Verified sender in Resend |
 | `ADMIN_EMAIL` | Admin / complaint notifications |
 
@@ -72,9 +75,10 @@ See **[docs/VERCEL_DEPLOY.md](docs/VERCEL_DEPLOY.md)** for step-by-step instruct
 
 | Command | Description |
 |---------|-------------|
-| `npm run dev` | Development server |
+| `npm run dev` | Development server (checks env first) |
 | `npm run build` | Production build |
-| `npm run db:push` | Sync schema to database |
+| `npm run db:setup` | Migrate + seed (first-time setup) |
+| `npm run db:migrate` | Apply migrations |
 | `npm run db:seed` | Load demo franchise data |
 | `npm run db:reset` | Wipe + seed (destructive) |
 

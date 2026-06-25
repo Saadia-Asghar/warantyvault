@@ -21,11 +21,14 @@ Use the **pooled** connection string if offered (better for serverless).
 
 ## 3. Environment variables
 
+**Full copy-paste checklist:** [docs/VERCEL_ENV_VARS.md](VERCEL_ENV_VARS.md)
+
 In **Project → Settings → Environment Variables**, add for **Production** (and Preview if needed):
 
 | Name | Example | Required |
 |------|---------|----------|
-| `DATABASE_URL` | `postgresql://...?sslmode=require` | Yes |
+| `DATABASE_URL` | Pooled `postgresql://...?pgbouncer=true` (Supabase port 6543) | Yes |
+| `DIRECT_URL` | Direct `postgresql://...` (Supabase port 5432) | Yes |
 | `AUTH_SECRET` | output of `openssl rand -base64 32` | Yes |
 | `NEXT_PUBLIC_APP_URL` | `https://warantyvault.vercel.app` | Yes |
 | `RESEND_API_KEY` | `re_...` from Resend | Recommended |
@@ -60,6 +63,7 @@ Or on Windows PowerShell:
 
 ```powershell
 $env:DATABASE_URL="postgresql://..."
+$env:DIRECT_URL="postgresql://..."
 npm run db:seed
 ```
 
