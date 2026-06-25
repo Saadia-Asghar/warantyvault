@@ -1,116 +1,113 @@
 # Mobile app (APK) + free deployment
 
-WarrantyVault PK is a **Progressive Web App (PWA)** — installable on Android/iOS without an app store. You can also wrap it as an **APK** for sideloading or Play Store internal testing.
+WarrantyVault PK ships as a **PWA** (install from browser) and a **native Android APK** (Capacitor WebView → your live Vercel URL + Supabase database).
 
 ---
 
-## Free hosting stack (recommended)
+## How the Android app works
 
-| Service | Free tier | Purpose |
-|---------|-----------|---------|
-| **[Vercel](https://vercel.com)** | Hobby | Next.js app, HTTPS, cron |
-| **[Supabase](https://supabase.com)** | 500 MB DB | PostgreSQL |
-| **[Resend](https://resend.com)** | 3k emails/mo | Notifications |
-| **[Polygon Amoy](https://faucet.polygon.technology/)** | Testnet MATIC | Blockchain (optional) |
+The APK does **not** bundle a separate backend. It opens your deployed site:
 
-**Total cost for beta:** $0
+```
+https://warantyvault.vercel.app
+```
 
-### Deploy steps
+All logins, warranties, chat, and map data use **your Supabase PostgreSQL** — same as the website.
 
-1. Push repo to GitHub (done)
-2. Vercel → Import project → set env vars from `docs/VERCEL_ENV_VARS.md`
-3. Supabase → run migrations (`npm run db:migrate` locally with `DIRECT_URL`)
-4. Seed once: `npm run db:seed`
-5. Set `NEXT_PUBLIC_APP_URL` to your Vercel URL → redeploy
+To point at a different URL (e.g. custom domain), edit `capacitor.config.json` → `server.url` and rebuild.
 
 ---
 
-## Install as mobile app (no APK build)
+## Option 1 — Install without building (fastest)
 
-### Android (Chrome)
+### Android Chrome
 
-1. Open your Vercel URL
-2. Tap **Install** banner or menu → **Add to Home screen**
-3. App opens full-screen like a native app
+1. Open your live URL
+2. Tap **Install** banner or ⋮ menu → **Install app** / **Add to Home screen**
 
-### iPhone (Safari)
+### Download page
 
-Share → **Add to Home Screen**
-
-The app includes `manifest.webmanifest`, service worker, and safe-area padding for notched phones.
+Users can visit **`/download`** on your site for instructions.
 
 ---
 
-## Build Android APK (optional)
+## Option 2 — Build APK (Capacitor)
 
-### Option A — PWABuilder (easiest, free)
+### Prerequisites (one-time)
+
+1. Install **[Android Studio](https://developer.android.com/studio)** (includes JDK 17)
+2. Open Android Studio → **SDK Manager** → install:
+   - Android SDK 34+
+   - Android SDK Build-Tools
+   - Android SDK Platform-Tools
+3. Add to Windows environment (optional but helps CLI builds):
+   - `JAVA_HOME` = `C:\Program Files\Android\Android Studio\jbr`
+   - `ANDROID_HOME` = `C:\Users\YOUR_USER\AppData\Local\Android\Sdk`
+
+### Build commands
+
+```powershell
+cd d:\ubl\warrantyvault-pk
+
+# Sync web shell + plugins into android/
+npm run cap:sync
+
+# Build APK + copy to public/downloads/warrantyvault-pk.apk
+npm run android:build
+```
+
+Or open in Android Studio:
+
+```powershell
+npm run android:open
+# Build → Build Bundle(s) / APK(s) → Build APK(s)
+```
+
+APK output:
+
+- Debug: `android/app/build/outputs/apk/debug/app-debug.apk`
+- After `npm run android:build`: `public/downloads/warrantyvault-pk.apk` (served at `/download`)
+
+### Release (Play Store)
+
+In Android Studio: **Build → Generate Signed Bundle / APK** → choose **AAB** for Google Play.
+
+---
+
+## Option 3 — PWABuilder (no Android Studio)
 
 1. Deploy to Vercel first
 2. Go to [pwabuilder.com](https://www.pwabuilder.com)
 3. Enter your URL → **Package for stores** → **Android**
-4. Download APK or AAB for Google Play
+4. Download APK/AAB
 
-### Option B — Capacitor (developer)
+---
 
-```bash
-cd warrantyvault-pk
-npm install @capacitor/core @capacitor/cli @capacitor/android
+## Free hosting stack
 
-# Edit capacitor.config.json — set server.url to your Vercel URL
-npx cap init "WarrantyVault PK" pk.warrantyvault.app --web-dir=out
-npx cap add android
-npx cap open android
+| Service | Purpose |
+|---------|---------|
+| Vercel | Next.js app, HTTPS |
+| Supabase | PostgreSQL |
+| Resend | Email (optional) |
+
+Set `NEXT_PUBLIC_APP_URL` to your Vercel URL before deploy.
+
+---
+
+## Troubleshooting Next.js dev errors
+
+If you see `Cannot find module './8948.js'`:
+
+```powershell
+npm run clean
+npm run dev
 ```
 
-In Android Studio: **Build → Build APK(s)**
-
-The WebView loads your live Vercel site — API, chat, and map all work without rebuilding for backend changes.
+See **`docs/TROUBLESHOOTING.md`**.
 
 ---
 
-## New: buyer ↔ shop chat
+## Features to add next
 
-| Role | Path |
-|------|------|
-| Buyer | `/buyer/messages` — start chat, shop replies |
-| Shop | `/shop/messages` — inbox & reply |
-
-- Real-time via **5s polling** (handles 200+ users on Supabase pooler)
-- Push-style **in-app notifications** + email on new messages
-- Link warranty to thread when messaging issuing shop
-
-Public complaints (`/complaints`) still email admin; use **Chat** for shopkeeper dialogue.
-
----
-
-## Accessibility features added
-
-- 44px minimum tap targets on chat send
-- `aria-live` on message list
-- Screen reader labels on inputs
-- Bottom nav with safe-area insets (iPhone home bar)
-- Short warranty codes instead of 64-char hashes
-- QR scan + image upload on `/verify`
-
----
-
-## Features to add next (market-driven)
-
-See `docs/MARKET_RESEARCH_PK.md`:
-
-1. Urdu UI toggle
-2. Warranty PDF for consumer court
-3. PTA IMEI check integration
-4. WhatsApp share card
-5. Push notifications (Firebase) for chat when app closed
-
----
-
-## Scale notes (200 beta users)
-
-- Supabase **transaction pooler** on `DATABASE_URL`
-- API rate limits on verify, nearby, chat
-- 45s cache on nearby shops
-- DB indexes on chat threads
-
-Monitor: `GET /api/health`
+See `docs/MARKET_RESEARCH_PK.md` and `docs/COMPETITORS_PK.md`.

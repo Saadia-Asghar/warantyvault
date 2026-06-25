@@ -3,10 +3,23 @@
   "appName": "WarrantyVault PK",
   "webDir": "out",
   "server": {
-    "url": "https://YOUR-APP.vercel.app",
-    "cleartext": false
+    "url": "https://warantyvault.vercel.app",
+    "cleartext": false,
+    "androidScheme": "https"
   },
   "android": {
-    "allowMixedContent": false
+    "allowMixedContent": false,
+    "backgroundColor": "#fdf9f5"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 2000,
+      "backgroundColor": "#fdf9f5",
+      "showSpinner": false
+    },
+    "StatusBar": {
+      "style": "LIGHT",
+      "backgroundColor": "#fdf9f5"
+    }
   }
 }

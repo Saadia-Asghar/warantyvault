@@ -32,8 +32,22 @@ export default function AdminDashboardPage() {
     Array<{ eventType: string; eventHash: string; createdAt: string }>
   >([]);
   const [searchQ, setSearchQ] = useState("");
+  const [searchStatus, setSearchStatus] = useState("");
+  const [dateMonth, setDateMonth] = useState("");
   const [warranties, setWarranties] = useState<
-    Array<{ id: string; warrantyCode: string; productName: string; status: string; shop?: { shopName: string } }>
+    Array<{
+      id: string;
+      warrantyCode: string;
+      productName: string;
+      status: string;
+      buyerName: string | null;
+      buyerPhone: string | null;
+      startDate: string;
+      endDate: string;
+      shop?: { shopName: string };
+      company?: { brandName: string } | null;
+      buyer?: { name: string; phone: string } | null;
+    }>
   >([]);
   const [expandedComplaint, setExpandedComplaint] = useState<string | null>(null);
 
@@ -70,7 +84,14 @@ export default function AdminDashboardPage() {
   }
 
   async function searchWarranties() {
-    const res = await fetch(`/api/admin/warranties?q=${encodeURIComponent(searchQ)}`);
+    const params = new URLSearchParams();
+    if (searchQ.trim()) params.set("q", searchQ.trim());
+    if (searchStatus) params.set("status", searchStatus);
+    if (dateMonth.trim()) {
+      params.set("dateMonth", dateMonth.trim());
+      params.set("dateField", "expires");
+    }
+    const res = await fetch(`/api/admin/warranties?${params}`);
     const j = await res.json();
     if (j.success) setWarranties(j.data);
   }
@@ -105,7 +126,11 @@ export default function AdminDashboardPage() {
         <ThemeToggle />
       </div>
       <main className="mx-auto max-w-lg px-4 py-6 md:max-w-2xl">
-        <div className="summary-card">
+        <p className="mt-2 text-sm text-[var(--text-muted)]">
+          Platform oversight — not for daily shop or buyer use. Login: admin@warrantyvault.pk
+        </p>
+
+        <div className="summary-card mt-6">
           <p className="text-sm text-[var(--text-muted)]">Platform overview</p>
           <p className="mt-1 text-3xl font-bold text-[var(--text-primary)]">
             {data?.stats.warranties ?? "—"}
@@ -115,15 +140,35 @@ export default function AdminDashboardPage() {
           </p>
         </div>
 
-        <h2 className="mb-2 mt-8 text-xs font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
-          Revoke warranty
+        <h2 className="mb-1 mt-8 text-xs font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
+          Warranty search & revoke
         </h2>
-        <div className="panel flex gap-2 p-3">
+        <p className="mb-2 text-xs text-[var(--text-muted)]">
+          Find any warranty (including expired) by customer, product, brand, phone, or code. Revoke
+          fraudulent entries.
+        </p>
+        <div className="panel flex flex-col gap-2 p-3 sm:flex-row">
           <Input
-            placeholder="Search code, product, phone, hash"
+            placeholder="Customer, product, brand, phone, code"
             value={searchQ}
             onChange={(e) => setSearchQ(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && void searchWarranties()}
+          />
+          <select
+            className="input-field py-2 text-xs sm:max-w-[140px]"
+            value={searchStatus}
+            onChange={(e) => setSearchStatus(e.target.value)}
+          >
+            <option value="">All status</option>
+            <option value="EXPIRED">Expired</option>
+            <option value="ACTIVE">Active</option>
+            <option value="REVOKED">Revoked</option>
+          </select>
+          <Input
+            placeholder="Expiry month 2024-06"
+            value={dateMonth}
+            onChange={(e) => setDateMonth(e.target.value)}
+            className="sm:max-w-[140px]"
           />
           <Button onClick={() => void searchWarranties()}>Search</Button>
         </div>
@@ -133,8 +178,17 @@ export default function AdminDashboardPage() {
               <div key={w.id} className="flex items-center justify-between border-b border-[var(--border)] p-4 last:border-b-0">
                 <div>
                   <p className="font-medium text-[var(--text-primary)]">{w.productName}</p>
+                  {w.company?.brandName && (
+                    <p className="text-xs text-[var(--accent)]">{w.company.brandName}</p>
+                  )}
                   <p className="font-mono text-xs text-[var(--text-muted)]">{w.warrantyCode}</p>
-                  <p className="text-xs text-[var(--text-tertiary)]">{w.shop?.shopName}</p>
+                  <p className="text-xs text-[var(--text-muted)]">
+                    {w.buyer?.name ?? w.buyerName ?? "—"} · {w.buyer?.phone ?? w.buyerPhone ?? "—"}
+                  </p>
+                  <p className="text-xs text-[var(--text-tertiary)]">
+                    {w.shop?.shopName} · Issued {formatDate(w.startDate)} · Expires{" "}
+                    {formatDate(w.endDate)}
+                  </p>
                 </div>
                 <div className="text-right">
                   <p className="text-xs text-[var(--text-muted)]">{warrantyStatusLabel(w.status)}</p>
@@ -153,9 +207,12 @@ export default function AdminDashboardPage() {
           </div>
         )}
 
-        <h2 className="mb-2 mt-8 text-xs font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
+        <h2 className="mb-1 mt-8 text-xs font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
           Complaints inbox
         </h2>
+        <p className="mb-2 text-xs text-[var(--text-muted)]">
+          Public complaints from /complaints — review and mark resolved.
+        </p>
         <div className="activity-feed">
           {complaints.length === 0 ? (
             <div className="px-4 py-6 text-center text-sm text-[var(--text-muted)]">No complaints</div>

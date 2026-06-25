@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { ShopBottomNav } from "@/components/shop-bottom-nav";
 import { ContextBanner } from "@/components/context-banner";
 import { ShopTopBar } from "@/components/shop-top-bar";
@@ -36,6 +37,7 @@ type VerifyResult = {
 };
 
 export default function ShopVerifyPage() {
+  const searchParams = useSearchParams();
   const [hash, setHash] = useState("");
   const [issue, setIssue] = useState("");
   const [result, setResult] = useState<VerifyResult | null>(null);
@@ -44,6 +46,12 @@ export default function ShopVerifyPage() {
   const [error, setError] = useState("");
   const [rejectReason, setRejectReason] = useState("");
   const [showReject, setShowReject] = useState(false);
+
+  useEffect(() => {
+    const code = searchParams.get("code");
+    if (code) void verify({ warrantyCode: code });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   async function verify(input?: { hash?: string; warrantyCode?: string }) {
     setLoading(true);

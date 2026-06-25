@@ -28,12 +28,18 @@ export default function CompanyWarrantiesPage() {
   const [items, setItems] = useState<Warranty[]>([]);
   const [q, setQ] = useState("");
   const [status, setStatus] = useState("");
+  const [dateMonth, setDateMonth] = useState("");
+  const [dateField, setDateField] = useState<"issued" | "expires">("expires");
   const [loading, setLoading] = useState<string | null>(null);
 
   function load() {
     const params = new URLSearchParams();
     if (q) params.set("q", q);
     if (status) params.set("status", status);
+    if (dateMonth.trim()) {
+      params.set("dateMonth", dateMonth.trim());
+      params.set("dateField", dateField);
+    }
     fetch(`/api/company/warranties?${params}`)
       .then((r) => r.json())
       .then((j) => {
@@ -95,7 +101,7 @@ export default function CompanyWarrantiesPage() {
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-tertiary)]" />
             <input
               className="input-field w-full py-2 pl-9 text-sm"
-              placeholder="Search product, code, phone, IMEI"
+              placeholder="Customer, product, brand, phone, code, IMEI"
               value={q}
               onChange={(e) => setQ(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && load()}
@@ -112,10 +118,25 @@ export default function CompanyWarrantiesPage() {
           >
             <option value="">All status</option>
             <option value="ACTIVE">Active</option>
+            <option value="EXPIRED">Expired</option>
             <option value="PENDING_TRANSFER">Pending</option>
             <option value="REVOKED">Revoked</option>
-            <option value="EXPIRED">Expired</option>
           </select>
+          <select
+            className="input-field max-w-[160px] py-2 text-xs"
+            value={dateField}
+            onChange={(e) => setDateField(e.target.value as "issued" | "expires")}
+          >
+            <option value="expires">Expiry month</option>
+            <option value="issued">Issue month</option>
+          </select>
+          <input
+            className="input-field max-w-[140px] py-2 text-xs"
+            placeholder="e.g. 2024-06"
+            value={dateMonth}
+            onChange={(e) => setDateMonth(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && load()}
+          />
           <button type="button" onClick={exportCsv} className="btn-ghost text-xs">
             <Download className="mr-1 inline h-3 w-3" /> Export CSV
           </button>
@@ -146,10 +167,18 @@ export default function CompanyWarrantiesPage() {
                       </p>
                     )}
                     <p className="text-xs text-[var(--text-tertiary)]">
-                      Expires {formatDate(w.endDate)}
+                      Issued {formatDate(w.createdAt)} · Expires {formatDate(w.endDate)}
                     </p>
                   </div>
-                  <Badge variant={w.status === "ACTIVE" ? "active" : "pending"}>
+                  <Badge
+                    variant={
+                      w.status === "ACTIVE"
+                        ? "active"
+                        : w.status === "EXPIRED"
+                          ? "expired"
+                          : "pending"
+                    }
+                  >
                     {warrantyStatusLabel(w.status)}
                   </Badge>
                 </div>

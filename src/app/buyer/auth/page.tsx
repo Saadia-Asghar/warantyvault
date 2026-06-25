@@ -8,6 +8,8 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Shield } from "lucide-react";
+import { ROLE_COPY } from "@/lib/copy";
+import { DEMO_LOGINS } from "@/lib/demo";
 
 export default function BuyerAuthPage() {
   const router = useRouter();
@@ -61,8 +63,8 @@ export default function BuyerAuthPage() {
             <Shield className="h-5 w-5" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-[var(--text-primary)]">Your warranty wallet</h1>
-            <p className="text-sm text-[var(--text-muted)]">All your shop warranties in one secure place</p>
+            <h1 className="text-xl font-bold text-[var(--text-primary)]">{ROLE_COPY.buyer.title}</h1>
+            <p className="text-sm text-[var(--text-muted)]">{ROLE_COPY.buyer.subtitle}</p>
           </div>
         </div>
 
@@ -114,10 +116,14 @@ export default function BuyerAuthPage() {
             )}
           </form>
 
-          <p className="mt-4 text-center text-xs text-[var(--text-tertiary)]">
-            Your session is encrypted · Shop owner?{" "}
+          <p className="mt-4 rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)] px-3 py-2 text-xs text-[var(--text-muted)]">
+            <strong className="text-[var(--text-primary)]">Demo:</strong>{" "}
+            {DEMO_LOGINS.find((d) => d.role === "Buyer")?.login} / demo1234
+          </p>
+          <p className="mt-3 text-center text-xs text-[var(--text-tertiary)]">
+            Shop owner?{" "}
             <Link href="/shop/auth" className="text-[var(--accent)] hover:underline">
-              Shop portal
+              Outlet login
             </Link>
           </p>
         </Card>

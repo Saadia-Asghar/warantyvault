@@ -3,7 +3,9 @@ import { Plus_Jakarta_Sans, IBM_Plex_Mono, Fraunces } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { PageBackBar } from "@/components/back-button";
+import { DemoModeBanner } from "@/components/demo-mode-banner";
 import { PwaInstallBanner } from "@/components/pwa-install-banner";
+import { BRAND } from "@/lib/copy";
 
 export const dynamic = "force-dynamic";
 
@@ -26,9 +28,8 @@ const ibmPlexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "WarrantyVault PK — Digital Shop Warranty",
-  description:
-    "Immutable digital shop warranties for Pakistani retail. Never lose your warranty again.",
+  title: `${BRAND.name} — ${BRAND.tagline}`,
+  description: BRAND.subhead,
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
@@ -51,6 +52,7 @@ export default function RootLayout({
       <body className="font-sans antialiased">
         <ThemeProvider>
           <PageBackBar />
+          <DemoModeBanner />
           <PwaInstallBanner />
           {children}
         </ThemeProvider>

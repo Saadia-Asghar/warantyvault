@@ -57,7 +57,11 @@ Open [http://localhost:3000](http://localhost:3000)
 | `/buyer/messages` | **Chat** with shopkeepers (complaints & support) |
 | `/shop/messages` | Shop inbox — reply to customers |
 
-**Mobile app:** Install from browser (PWA) or build APK — see **[docs/MOBILE_APK_DEPLOY.md](docs/MOBILE_APK_DEPLOY.md)**
+**Mobile app:** Install from browser (PWA), download page **`/download`**, or build APK — see **[docs/MOBILE_APK_DEPLOY.md](docs/MOBILE_APK_DEPLOY.md)**
+
+**Dev server error `Cannot find module './8948.js'`?** Run `npm run dev:clean` — see **[docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)**
+
+**Competitors & market gap:** **[docs/COMPETITORS_PK.md](docs/COMPETITORS_PK.md)**
 | `/company` | Reinstate suspended outlets |
 | `/admin` | Complaint details, warranty search & revoke |
 
@@ -117,7 +121,12 @@ On `/verify`, users can **Connect MetaMask** (Polygon Amoy) to read the public c
 | Command | Description |
 |---------|-------------|
 | `npm run dev` | Development server (checks env first) |
+| `npm run dev:fresh` | Kill stale ports, clear cache, start dev (fixes 404) |
+| `npm run dev:clean` | Clear `.next` cache then start dev (fixes module errors) |
+| `npm run clean` | Delete stale `.next` build cache |
 | `npm run build` | Production build |
+| `npm run android:build` | Build APK (needs Android Studio + Java) |
+| `npm run android:open` | Open project in Android Studio |
 | `npm run db:setup` | Migrate + seed (first-time setup) |
 | `npm run db:migrate` | Apply migrations |
 | `npm run db:seed` | Load demo franchise data |

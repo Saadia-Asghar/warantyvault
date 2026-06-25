@@ -1,6 +1,7 @@
-import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { LogoMark } from "@/components/logo-mark";
+import { BRAND } from "@/lib/copy";
 
 type LogoProps = {
   size?: number;
@@ -12,17 +13,11 @@ type LogoProps = {
 export function Logo({ size = 36, showText = true, href = "/", className }: LogoProps) {
   const content = (
     <div className={cn("flex items-center gap-2.5", className)}>
-      <Image
-        src="/logo.png"
-        alt="WarrantyVault PK"
-        width={size}
-        height={size}
-        className="rounded-xl"
-        priority
-      />
+      <LogoMark size={size} />
       {showText && (
-        <span className="text-sm font-bold text-[var(--text-primary)]">
-          WarrantyVault <span className="text-[var(--accent)]">PK</span>
+        <span className="text-sm font-bold tracking-tight text-[var(--text-primary)]">
+          {BRAND.shortName}{" "}
+          <span className="font-semibold text-[var(--accent)]">PK</span>
         </span>
       )}
     </div>
@@ -30,7 +25,7 @@ export function Logo({ size = 36, showText = true, href = "/", className }: Logo
 
   if (href) {
     return (
-      <Link href={href} className="inline-flex">
+      <Link href={href} className="inline-flex" aria-label={BRAND.name}>
         {content}
       </Link>
     );

@@ -6,14 +6,14 @@ import { X, Info } from "lucide-react";
 
 const TIPS: Record<string, { title: string; body: string; cta?: { label: string; href: string } }> = {
   buyer: {
-    title: "Your warranty wallet",
-    body: "When a shop issues a warranty to your phone, you'll get a notification. Open Pending tab → tap Accept. Your QR appears after acceptance.",
-    cta: { label: "Verify a hash", href: "/verify" },
+    title: "Customer wallet",
+    body: "Pending warranties need your Accept. Use Map for nearby outlets, Scan to verify a code, Chat to message the selling shop.",
+    cta: { label: "Find outlets near me", href: "/nearby" },
   },
   shop: {
-    title: "Shop portal",
-    body: "Issue warranty → buyer accepts on their phone → they get a QR code. At claim time, open Verify and scan their QR or paste the hash.",
-    cta: { label: "Issue warranty", href: "/shop/issue" },
+    title: "Outlet dashboard",
+    body: "Issue → customer accepts → QR in their wallet. Search Warranty records for any customer (including expired). Verify scans QR at claim time.",
+    cta: { label: "Warranty records", href: "/shop/records" },
   },
   company: {
     title: "Brand network",

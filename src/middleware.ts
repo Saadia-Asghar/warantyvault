@@ -50,9 +50,16 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  /* Nearby map is for buyers and anonymous visitors — not shop/brand/admin workflows */
+  if (pathname === "/nearby" && role && role !== "buyer") {
+    const dest =
+      role === "shop" ? "/shop" : role === "company" ? "/company" : "/admin";
+    return NextResponse.redirect(new URL(dest, request.url));
+  }
+
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/shop/:path*", "/buyer/:path*", "/admin/:path*", "/company/:path*"],
+  matcher: ["/shop/:path*", "/buyer/:path*", "/admin/:path*", "/company/:path*", "/nearby"],
 };

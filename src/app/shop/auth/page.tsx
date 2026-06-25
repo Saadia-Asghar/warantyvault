@@ -8,6 +8,8 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Store, ArrowLeft } from "lucide-react";
+import { ROLE_COPY } from "@/lib/copy";
+import { DEMO_LOGINS } from "@/lib/demo";
 
 type Company = { id: string; brandName: string };
 
@@ -77,10 +79,8 @@ export default function ShopAuthPage() {
             <Store className="h-5 w-5" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-[var(--text-primary)]">Shop / Outlet</h1>
-            <p className="text-sm text-[var(--text-muted)]">
-              Join a brand network or operate standalone
-            </p>
+            <h1 className="text-xl font-bold text-[var(--text-primary)]">{ROLE_COPY.shop.title}</h1>
+            <p className="text-sm text-[var(--text-muted)]">{ROLE_COPY.shop.subtitle}</p>
           </div>
         </div>
 
@@ -185,6 +185,13 @@ export default function ShopAuthPage() {
               </p>
             )}
           </form>
+          <p className="mt-4 rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)] px-3 py-2 text-xs text-[var(--text-muted)]">
+            <strong className="text-[var(--text-primary)]">Demo:</strong>{" "}
+            {DEMO_LOGINS.filter((d) => d.role.startsWith("Shop"))
+              .map((d) => d.login)
+              .join(" · ")}{" "}
+            / demo1234
+          </p>
         </Card>
       </main>
     </div>

@@ -115,8 +115,15 @@ export default async function ShopDashboardPage() {
         )}
 
         <Link
-          href="/shop/verify"
+          href="/shop/records"
           className="mt-4 flex items-center justify-center gap-1 text-sm text-[var(--accent)] hover:underline"
+        >
+          Search all records (incl. expired) <ChevronRight className="h-4 w-4" />
+        </Link>
+
+        <Link
+          href="/shop/verify"
+          className="mt-2 flex items-center justify-center gap-1 text-sm text-[var(--text-muted)] hover:underline"
         >
           Verify customer QR <ChevronRight className="h-4 w-4" />
         </Link>

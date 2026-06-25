@@ -28,10 +28,14 @@ export default function HomePage() {
       </main>
 
       <footer className="border-t border-[var(--border)] py-6 text-center text-xs text-[var(--text-tertiary)]">
-        <p>WarrantyVault PK · Paper warranties are lost. Digital ones are not.</p>
+        <p>WarrantyVault PK · Digital shop warranties for Pakistan</p>
         <p className="mt-2">
           <Link href="/complaints" className="text-[var(--accent)] hover:underline">
             Submit a complaint
+          </Link>
+          {" · "}
+          <Link href="/download" className="text-[var(--accent)] hover:underline">
+            Android app
           </Link>
           {" · "}
           <Link href="/nearby" className="text-[var(--accent)] hover:underline">
