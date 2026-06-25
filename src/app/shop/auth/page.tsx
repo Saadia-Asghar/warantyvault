@@ -6,32 +6,57 @@ import { useRouter } from "next/navigation";
 import { AuthTabs } from "@/components/auth-tabs";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { SelectField } from "@/components/ui/select-field";
 import { Button } from "@/components/ui/button";
 import { Store, ArrowLeft } from "lucide-react";
 import { ROLE_COPY } from "@/lib/copy";
 import { DEMO_LOGINS, showDemoCredentials } from "@/lib/demo";
+import { shopLoginSchema, shopRegisterSchema } from "@/lib/validators";
+import {
+  type FieldErrors,
+  firstFormError,
+  parseApiFieldErrors,
+  validateForm,
+} from "@/lib/form-errors";
 
 type Company = { id: string; brandName: string };
+
+type ShopForm = {
+  email: string;
+  password: string;
+  shopName: string;
+  ownerName: string;
+  phone: string;
+  city: string;
+  sector: string;
+  address: string;
+  category: "MOBILE" | "APPLIANCE" | "GENERAL";
+  companyId: string;
+  joinNetwork: boolean;
+};
+
+const EMPTY_FORM: ShopForm = {
+  email: "",
+  password: "",
+  shopName: "",
+  ownerName: "",
+  phone: "",
+  city: "",
+  sector: "",
+  address: "",
+  category: "MOBILE",
+  companyId: "",
+  joinNetwork: true,
+};
 
 export default function ShopAuthPage() {
   const router = useRouter();
   const [mode, setMode] = useState<"login" | "register">("login");
   const [companies, setCompanies] = useState<Company[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [form, setForm] = useState({
-    email: "",
-    password: "",
-    shopName: "",
-    ownerName: "",
-    phone: "",
-    city: "",
-    sector: "",
-    address: "",
-    category: "MOBILE",
-    companyId: "",
-    joinNetwork: true,
-  });
+  const [formError, setFormError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [form, setForm] = useState<ShopForm>(EMPTY_FORM);
 
   useEffect(() => {
     fetch("/api/companies")
@@ -44,23 +69,57 @@ export default function ShopAuthPage() {
       });
   }, []);
 
+  function patchForm<K extends keyof ShopForm>(key: K, value: ShopForm[K]) {
+    setForm((f) => ({ ...f, [key]: value }));
+    setFieldErrors((e) => {
+      if (!e[key]) return e;
+      const next = { ...e };
+      delete next[key];
+      return next;
+    });
+    setFormError("");
+  }
+
+  function switchMode(next: "login" | "register") {
+    setMode(next);
+    setFormError("");
+    setFieldErrors({});
+  }
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    setLoading(true);
-    setError("");
-    const res = await fetch("/api/auth/shop", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: mode, ...form }),
-    });
-    const json = await res.json();
-    setLoading(false);
-    if (!json.success) {
-      setError(json.error ?? "Something went wrong");
+    setFormError("");
+    setFieldErrors({});
+
+    const schema = mode === "login" ? shopLoginSchema : shopRegisterSchema;
+    const validation = validateForm(schema, form);
+    if (!validation.ok) {
+      setFieldErrors(validation.fieldErrors);
+      setFormError(firstFormError(validation.fieldErrors));
       return;
     }
-    router.push("/shop");
-    router.refresh();
+
+    setLoading(true);
+    try {
+      const res = await fetch("/api/auth/shop", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: mode, ...form }),
+      });
+      const json = await res.json();
+      if (!json.success) {
+        const errors = parseApiFieldErrors(json.error ?? "Something went wrong", json.fieldErrors);
+        setFieldErrors(errors);
+        setFormError(firstFormError(errors));
+        return;
+      }
+      router.push("/shop");
+      router.refresh();
+    } catch {
+      setFormError("Network error — check your connection and try again.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -85,96 +144,121 @@ export default function ShopAuthPage() {
         </div>
 
         <Card>
-          <AuthTabs mode={mode} onChange={setMode} />
+          <AuthTabs mode={mode} onChange={switchMode} />
 
-          <form onSubmit={submit} className="mt-6 space-y-3">
+          <form onSubmit={submit} className="mt-6 space-y-3" noValidate>
             <Input
               label="Email"
               type="email"
-              required
+              autoComplete="email"
+              placeholder="g6@dollars.demo.pk"
+              hint="Work email for this outlet — used to sign in"
               value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
+              error={fieldErrors.email}
+              onChange={(e) => patchForm("email", e.target.value)}
             />
             <Input
               label="Password"
               type="password"
-              required
+              autoComplete={mode === "login" ? "current-password" : "new-password"}
+              placeholder="demo1234"
+              hint="At least 8 characters"
               minLength={8}
               value={form.password}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
+              error={fieldErrors.password}
+              onChange={(e) => patchForm("password", e.target.value)}
             />
             {mode === "register" && (
               <>
                 <Input
                   label="Shop display name"
-                  required
+                  placeholder="Dollar's Mobile G-6"
+                  hint="Name customers see on warranties and the map"
                   value={form.shopName}
-                  onChange={(e) => setForm({ ...form, shopName: e.target.value })}
+                  error={fieldErrors.shopName}
+                  onChange={(e) => patchForm("shopName", e.target.value)}
                 />
                 <Input
                   label="Owner name"
-                  required
+                  placeholder="Ahmed Khan"
+                  hint="Full name of the shop owner"
                   value={form.ownerName}
-                  onChange={(e) => setForm({ ...form, ownerName: e.target.value })}
+                  error={fieldErrors.ownerName}
+                  onChange={(e) => patchForm("ownerName", e.target.value)}
                 />
                 <Input
                   label="Phone"
-                  required
+                  type="tel"
+                  inputMode="tel"
+                  placeholder="03001234567"
+                  hint="Pakistani mobile — 11 digits, no spaces"
                   value={form.phone}
-                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                  error={fieldErrors.phone}
+                  onChange={(e) => patchForm("phone", e.target.value)}
                 />
                 <div className="grid grid-cols-2 gap-3">
                   <Input
                     label="City"
-                    required
+                    placeholder="Islamabad"
+                    hint="e.g. Islamabad, Lahore"
                     value={form.city}
-                    onChange={(e) => setForm({ ...form, city: e.target.value })}
+                    error={fieldErrors.city}
+                    onChange={(e) => patchForm("city", e.target.value)}
                   />
                   <Input
                     label="Sector / area"
+                    placeholder="G-6"
+                    hint="Sector or locality code"
                     value={form.sector}
-                    onChange={(e) => setForm({ ...form, sector: e.target.value })}
+                    error={fieldErrors.sector}
+                    onChange={(e) => patchForm("sector", e.target.value)}
                   />
                 </div>
                 <Input
                   label="Full address"
-                  required
-                  minLength={2}
+                  placeholder="G-6 Markaz, Plot 12"
+                  hint="Plot, street, or markaz — min 2 characters (e.g. G-6 Markaz)"
                   value={form.address}
-                  onChange={(e) => setForm({ ...form, address: e.target.value })}
-                  placeholder="G-6 Markaz, Plot 12, or full street address"
+                  error={fieldErrors.address}
+                  onChange={(e) => patchForm("address", e.target.value)}
                 />
                 <label className="flex items-center gap-2 text-sm text-[var(--text-muted)]">
                   <input
                     type="checkbox"
                     className="rounded border-[var(--border)]"
                     checked={form.joinNetwork}
-                    onChange={(e) => setForm({ ...form, joinNetwork: e.target.checked })}
+                    onChange={(e) => patchForm("joinNetwork", e.target.checked)}
                   />
                   Apply to join a brand network
                 </label>
-                {form.joinNetwork && companies.length > 0 && (
-                  <div>
-                    <label className="label-field">Select brand</label>
-                    <select
-                      className="input-field"
+                {form.joinNetwork && (
+                  companies.length > 0 ? (
+                    <SelectField
+                      label="Select brand"
+                      hint="Brand HQ must approve before you can issue warranties"
                       value={form.companyId}
-                      onChange={(e) => setForm({ ...form, companyId: e.target.value })}
+                      error={fieldErrors.companyId}
+                      onChange={(e) => patchForm("companyId", e.target.value)}
                     >
                       {companies.map((c) => (
                         <option key={c.id} value={c.id}>
                           {c.brandName}
                         </option>
                       ))}
-                    </select>
-                    <p className="mt-1 text-xs text-amber-400/90">
-                      Brand HQ must approve before you can issue warranties.
+                    </SelectField>
+                  ) : (
+                    <p className="text-xs text-amber-400/90">
+                      Loading brands… If this stays empty, register as standalone (uncheck network).
                     </p>
-                  </div>
+                  )
                 )}
               </>
             )}
-            {error && <p className="text-sm text-red-400">{error}</p>}
+            {formError && (
+              <p className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-400" role="alert">
+                {formError}
+              </p>
+            )}
             <Button type="submit" loading={loading} className="w-full">
               {mode === "login" ? "Sign in" : "Register outlet"}
             </Button>
