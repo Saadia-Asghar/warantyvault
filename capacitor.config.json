@@ -1,0 +1,12 @@
+{
+  "appId": "pk.warrantyvault.app",
+  "appName": "WarrantyVault PK",
+  "webDir": "out",
+  "server": {
+    "url": "https://YOUR-APP.vercel.app",
+    "cleartext": false
+  },
+  "android": {
+    "allowMixedContent": false
+  }
+}

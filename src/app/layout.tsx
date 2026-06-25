@@ -3,6 +3,7 @@ import { Plus_Jakarta_Sans, IBM_Plex_Mono, Fraunces } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { PageBackBar } from "@/components/back-button";
+import { PwaInstallBanner } from "@/components/pwa-install-banner";
 
 export const dynamic = "force-dynamic";
 
@@ -50,6 +51,7 @@ export default function RootLayout({
       <body className="font-sans antialiased">
         <ThemeProvider>
           <PageBackBar />
+          <PwaInstallBanner />
           {children}
         </ThemeProvider>
       </body>

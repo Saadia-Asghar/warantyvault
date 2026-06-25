@@ -79,7 +79,11 @@ export default function ComplaintsPage() {
           <div>
             <h1 className="text-xl font-bold text-[var(--text-primary)]">Submit a complaint</h1>
             <p className="text-sm text-[var(--text-muted)]">
-              Report an issue — we notify our team and email you a confirmation
+              Report to admin, or{" "}
+              <Link href="/buyer/messages/new" className="text-[var(--accent)] underline">
+                chat with a shopkeeper
+              </Link>{" "}
+              for a direct reply
             </p>
           </div>
         </div>

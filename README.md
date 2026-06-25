@@ -54,6 +54,10 @@ Open [http://localhost:3000](http://localhost:3000)
 | `/company/fraud` | Fraud flags + open claims across outlets |
 | `/nearby` | **Live map** — GPS, brand/city filters, OpenStreetMap |
 | `/verify` | **QR scanner** (camera + image upload) or short code `WV-PK-…` |
+| `/buyer/messages` | **Chat** with shopkeepers (complaints & support) |
+| `/shop/messages` | Shop inbox — reply to customers |
+
+**Mobile app:** Install from browser (PWA) or build APK — see **[docs/MOBILE_APK_DEPLOY.md](docs/MOBILE_APK_DEPLOY.md)**
 | `/company` | Reinstate suspended outlets |
 | `/admin` | Complaint details, warranty search & revoke |
 

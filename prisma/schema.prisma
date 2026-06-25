@@ -62,6 +62,7 @@ model Shop {
   warranties     Warranty[]       @relation("IssuingShop")
   claims         Claim[]
   fraudFlags     FraudFlag[]
+  supportThreads SupportThread[]
 
   @@index([companyId])
   @@index([approvalStatus])
@@ -75,6 +76,7 @@ model Buyer {
   name         String
   createdAt    DateTime   @default(now())
   warranties   Warranty[]
+  supportThreads SupportThread[]
 }
 
 model Admin {
@@ -131,6 +133,7 @@ model Warranty {
   createdAt        DateTime      @default(now())
   claims           Claim[]
   reminders        ReminderLog[]
+  supportThreads   SupportThread[]
 
   @@index([shopId])
   @@index([companyId])
@@ -273,6 +276,41 @@ model Complaint {
 
   @@index([status])
   @@index([createdAt])
+}
+
+/// Buyer ↔ shop support chat thread
+model SupportThread {
+  id            String   @id @default(cuid())
+  buyerId       String
+  buyer         Buyer    @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+  shopId        String
+  shop          Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  warrantyId    String?
+  warranty      Warranty? @relation(fields: [warrantyId], references: [id], onDelete: SetNull)
+  subject       String
+  status        String   @default("OPEN")
+  /// OPEN | RESOLVED
+  lastMessageAt DateTime @default(now())
+  createdAt     DateTime @default(now())
+  messages      SupportMessage[]
+
+  @@index([buyerId, lastMessageAt])
+  @@index([shopId, lastMessageAt])
+  @@index([status])
+}
+
+model SupportMessage {
+  id         String        @id @default(cuid())
+  threadId   String
+  thread     SupportThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  senderId   String
+  senderRole String
+  /// buyer | shop
+  body       String
+  read       Boolean       @default(false)
+  createdAt  DateTime      @default(now())
+
+  @@index([threadId, createdAt])
 }
 
 model EmailLog {

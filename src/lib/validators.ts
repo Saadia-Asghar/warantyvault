@@ -116,7 +116,18 @@ export const changePasswordSchema = z.object({
 export const complaintSchema = z.object({
   name: z.string().min(2).max(100),
   email: z.string().email(),
-  phone: z.string().min(10).max(15).optional(),
+  phone: z.string().max(15).optional(),
   subject: z.string().min(3).max(120),
   message: z.string().min(10).max(2000),
+});
+
+export const createThreadSchema = z.object({
+  shopId: z.string().min(1),
+  warrantyId: z.string().optional(),
+  subject: z.string().min(3).max(120),
+  message: z.string().min(5).max(2000),
+});
+
+export const sendMessageSchema = z.object({
+  body: z.string().min(1).max(2000),
 });

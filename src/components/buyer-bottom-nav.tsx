@@ -3,12 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Search, Shield, User, MapPin } from "lucide-react";
+import { Search, Shield, User, MapPin, MessageCircle } from "lucide-react";
 
 const tabs = [
-  { href: "/buyer", label: "Warranties", icon: Shield, match: (p: string) => p === "/buyer" || p.startsWith("/buyer/warranty") },
-  { href: "/nearby", label: "Nearby", icon: MapPin, match: (p: string) => p === "/nearby" },
-  { href: "/verify", label: "Verify", icon: Search, match: (p: string) => p === "/verify" },
+  { href: "/buyer", label: "Wallet", icon: Shield, match: (p: string) => p === "/buyer" || p.startsWith("/buyer/warranty") },
+  { href: "/buyer/messages", label: "Chat", icon: MessageCircle, match: (p: string) => p.startsWith("/buyer/messages") },
+  { href: "/nearby", label: "Map", icon: MapPin, match: (p: string) => p === "/nearby" },
+  { href: "/verify", label: "Scan", icon: Search, match: (p: string) => p === "/verify" },
   { href: "/buyer/profile", label: "Profile", icon: User, match: (p: string) => p.startsWith("/buyer/profile") },
 ];
 

@@ -6,7 +6,9 @@ import { cn } from "@/lib/utils";
 
 function fallbackForPath(pathname: string): string {
   if (pathname.startsWith("/buyer/warranty")) return "/buyer";
+  if (pathname.startsWith("/buyer/messages")) return "/buyer/messages";
   if (pathname.startsWith("/buyer")) return "/get-started";
+  if (pathname.startsWith("/shop/messages")) return "/shop/messages";
   if (pathname.startsWith("/shop")) return "/get-started";
   if (pathname.startsWith("/company")) return "/get-started";
   if (pathname.startsWith("/admin")) return "/";

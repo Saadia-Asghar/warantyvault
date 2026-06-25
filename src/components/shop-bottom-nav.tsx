@@ -3,10 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, Plus, Search, ClipboardList } from "lucide-react";
+import { LayoutDashboard, Plus, Search, ClipboardList, MessageCircle } from "lucide-react";
 
 const tabs = [
   { href: "/shop", label: "Home", icon: LayoutDashboard, match: (p: string) => p === "/shop" },
+  { href: "/shop/messages", label: "Chat", icon: MessageCircle, match: (p: string) => p.startsWith("/shop/messages") },
   { href: "/shop/issue", label: "Issue", icon: Plus, match: (p: string) => p === "/shop/issue" },
   { href: "/shop/claims", label: "Claims", icon: ClipboardList, match: (p: string) => p === "/shop/claims" },
   { href: "/shop/verify", label: "Verify", icon: Search, match: (p: string) => p === "/shop/verify" },
