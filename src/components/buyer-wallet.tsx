@@ -167,6 +167,12 @@ export function BuyerWalletClient({ name }: { name: string }) {
               When a shop issues a warranty to your number, it appears here.
             </p>
           )}
+          <Link
+            href="/nearby"
+            className="mt-3 inline-flex items-center gap-1 text-sm text-[var(--accent)] hover:underline"
+          >
+            Find shops near me →
+          </Link>
         </div>
 
         {/* Alert banners — max 2, dismissible */}

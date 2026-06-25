@@ -1,6 +1,5 @@
 import { createHash } from "crypto";
 import { prisma } from "@/lib/prisma";
-import { generateTxHash } from "@/lib/hash";
 
 export type AuditEventType =
   | "WARRANTY_REGISTER"
@@ -22,7 +21,7 @@ export async function recordAuditEvent(input: {
   warrantyId?: string;
   warrantyHash?: string;
   payload: Record<string, unknown>;
-}): Promise<{ eventHash: string; txHash: string; auditEventId: string }> {
+}): Promise<{ eventHash: string; txHash: string; auditEventId: string; network?: "local" | "polygon_amoy" }> {
   const last = await prisma.auditEvent.findFirst({
     where: input.warrantyId ? { warrantyId: input.warrantyId } : undefined,
     orderBy: { createdAt: "desc" },
@@ -59,6 +58,7 @@ export async function recordAuditEvent(input: {
   });
 
   let txHash = eventHash;
+  let network: "local" | "polygon_amoy" = "local";
   if (input.warrantyHash) {
     const txType =
       input.eventType === "WARRANTY_REGISTER"
@@ -71,19 +71,18 @@ export async function recordAuditEvent(input: {
               ? "CLAIM"
               : "REGISTER";
 
-    txHash = generateTxHash();
-    await prisma.chainRecord.create({
-      data: {
-        warrantyHash: input.warrantyHash,
-        txType,
-        txHash,
-        payload: payloadJson,
-        auditEventId: auditEvent.id,
-      },
+    const { recordOnChain } = await import("@/lib/blockchain");
+    const chainResult = await recordOnChain(input.warrantyHash, txType, input.payload);
+    txHash = chainResult.txHash;
+    network = chainResult.network;
+
+    await prisma.chainRecord.update({
+      where: { txHash },
+      data: { auditEventId: auditEvent.id },
     });
   }
 
-  return { eventHash, txHash, auditEventId: auditEvent.id };
+  return { eventHash, txHash, auditEventId: auditEvent.id, network };
 }
 
 export async function getWarrantyAuditTimeline(warrantyId: string) {

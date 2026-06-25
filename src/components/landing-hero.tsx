@@ -55,6 +55,9 @@ export function LandingHero() {
           <Link href="/get-started" className="btn-primary w-full sm:w-auto">
             Get started
           </Link>
+          <Link href="/nearby" className="btn-secondary w-full text-center sm:w-auto">
+            Shops near me
+          </Link>
           <Link href="/verify" className="btn-ghost w-full text-center sm:w-auto">
             Verify a warranty
           </Link>
@@ -105,6 +108,7 @@ export function LandingHero() {
             <li>Brand · dollarsmobile@demo.pk / demo1234</li>
             <li>Shop G-6 · g6@dollars.demo.pk / demo1234</li>
             <li>Shop I-8 · i8@dollars.demo.pk / demo1234</li>
+            <li>Shop Lahore · lhr@dollars.demo.pk / demo1234</li>
             <li>Buyer · 03001234567 / demo1234</li>
           </ul>
         </div>

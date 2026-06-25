@@ -63,6 +63,8 @@ async function main() {
       city: "Islamabad",
       address: "Main Boulevard, Sector G-6, Islamabad",
       outletCode: "ISB-G6-001",
+      latitude: 33.7067,
+      longitude: 73.0893,
     },
     {
       email: "i8@dollars.demo.pk",
@@ -71,6 +73,8 @@ async function main() {
       city: "Islamabad",
       address: "Service Road, Sector I-8, Islamabad",
       outletCode: "ISB-I8-001",
+      latitude: 33.6844,
+      longitude: 73.0479,
     },
     {
       email: "khi@dollars.demo.pk",
@@ -79,6 +83,18 @@ async function main() {
       city: "Karachi",
       address: "Preedy Street, Saddar, Karachi",
       outletCode: "KHI-SADDAR-001",
+      latitude: 24.8567,
+      longitude: 67.0011,
+    },
+    {
+      email: "lhr@dollars.demo.pk",
+      shopName: "Dollar's Mobile Gulberg",
+      sector: "Gulberg",
+      city: "Lahore",
+      address: "Main Boulevard, Gulberg III, Lahore",
+      outletCode: "LHR-GUL-001",
+      latitude: 31.5204,
+      longitude: 74.3587,
     },
   ];
 
@@ -94,6 +110,8 @@ async function main() {
         city: o.city,
         sector: o.sector,
         address: o.address,
+        latitude: o.latitude,
+        longitude: o.longitude,
         category: "MOBILE",
         companyId: company.id,
         approvalStatus: "APPROVED",
@@ -193,6 +211,7 @@ async function main() {
   console.log("Brand:", "dollarsmobile@demo.pk / demo1234");
   console.log("Shop G-6:", "g6@dollars.demo.pk / demo1234");
   console.log("Shop I-8:", "i8@dollars.demo.pk / demo1234 (can process claims!)");
+  console.log("Shop Lahore:", "lhr@dollars.demo.pk / demo1234");
   console.log("Buyer:", "03001234567 / demo1234");
 }
 

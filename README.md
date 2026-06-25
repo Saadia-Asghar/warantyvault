@@ -57,6 +57,16 @@ Open [http://localhost:3000](http://localhost:3000)
 
 Shop: claim reject with reason, policy edit. Buyer: change password in profile. Daily expiry reminders (email + SMS) via Vercel cron.
 
+## Beta launch checklist
+
+1. **Database** — Supabase connected (`DATABASE_URL` + `DIRECT_URL`)
+2. **Health** — `GET /api/health` returns `status: ok` and shop counts
+3. **Polygon (real chain)** — fund wallet with [Amoy MATIC](https://faucet.polygon.technology/), run `npm run deploy:registry`, set `WARRANTY_REGISTRY_CONTRACT` in Vercel
+4. **Nearby shops** — `/nearby` uses GPS + approved outlet coordinates
+5. **Seed demo** — `npm run db:seed` on production DB once
+
+Without Polygon env vars, warranties still work end-to-end using the local audit registry (clearly labeled in verify UI).
+
 | Role | Login | Password |
 |------|-------|----------|
 | Brand | dollarsmobile@demo.pk | demo1234 |

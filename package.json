@@ -13,6 +13,7 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:setup": "node scripts/check-env.mjs && prisma migrate deploy && tsx prisma/seed.ts",
     "db:reset": "prisma migrate reset --force && tsx prisma/seed.ts",
+    "deploy:registry": "node scripts/deploy-registry.mjs",
     "postinstall": "prisma generate"
   },
   "prisma": {
@@ -23,6 +24,7 @@
     "bcryptjs": "^3.0.3",
     "clsx": "^2.1.1",
     "dotenv": "^17.4.2",
+    "ethers": "^6.17.0",
     "framer-motion": "^12.41.0",
     "html5-qrcode": "^2.3.8",
     "jose": "^6.2.3",
@@ -45,6 +47,7 @@
     "eslint": "^8",
     "eslint-config-next": "14.2.35",
     "postcss": "^8",
+    "solc": "^0.8.35",
     "tailwindcss": "^3.4.1",
     "tsx": "^4.22.4",
     "typescript": "^5"

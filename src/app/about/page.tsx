@@ -10,9 +10,10 @@ const sections = [
     title: "Stack",
     items: [
       "Next.js 14 App Router + TypeScript",
-      "Prisma ORM + SQLite (local) / Postgres (production)",
+      "Prisma ORM + PostgreSQL (Supabase production)",
       "JWT sessions (httpOnly cookies, bcrypt passwords)",
-      "SHA-256 warranty hashes + immutable chain registry",
+      "Polygon Amoy testnet anchoring when configured (real on-chain txs)",
+      "SHA-256 warranty hashes + immutable audit chain",
       "Zod validation on all API inputs",
     ],
   },
@@ -33,6 +34,7 @@ const sections = [
       "Shop issues warranty at G-6 → buyer accepts in wallet",
       "Customer claims at I-8 or Karachi — same brand network",
       "Shop scans QR → verifies hash → opens claim",
+      "Find approved outlets near you with GPS (/nearby)",
     ],
   },
 ];
@@ -100,6 +102,9 @@ export default function AboutPage() {
 
         <Link href="/get-started" className="btn-primary mt-8 w-full">
           Get started
+        </Link>
+        <Link href="/nearby" className="btn-secondary mt-3 w-full text-center">
+          Find shops near me
         </Link>
       </main>
 

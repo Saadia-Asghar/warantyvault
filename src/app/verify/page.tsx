@@ -13,7 +13,17 @@ import { CheckCircle2, XCircle, AlertCircle } from "lucide-react";
 function VerifyContent() {
   const searchParams = useSearchParams();
   const [hash, setHash] = useState(searchParams.get("hash") ?? "");
-  const [result, setResult] = useState<Record<string, unknown> | null>(null);
+  const [result, setResult] = useState<{
+    valid?: boolean;
+    expired?: boolean;
+    message?: string;
+    warranty?: Record<string, string> | null;
+    chain?: {
+      mode?: string;
+      polygonVerified?: boolean;
+      transactions?: Array<{ txHash: string; explorerUrl: string; network: string }>;
+    };
+  } | null>(null);
   const [loading, setLoading] = useState(false);
 
   const verifyHash = useCallback(async (h?: string) => {
@@ -99,6 +109,30 @@ function VerifyContent() {
           <Badge variant={valid ? "active" : "expired"} className="mt-4">
             {valid ? "Registered on-chain" : "Not valid"}
           </Badge>
+          {result.chain && (
+            <div className="mt-4 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-3 text-xs">
+              <p className="font-medium text-[var(--text-primary)]">
+                Blockchain:{" "}
+                {result.chain.mode === "polygon_amoy"
+                  ? "Polygon Amoy (live testnet)"
+                  : "Local registry (configure Polygon for live anchoring)"}
+              </p>
+              {result.chain.polygonVerified && (
+                <p className="mt-1 text-emerald-400">Verified on Polygon contract</p>
+              )}
+              {result.chain.transactions?.map((tx) => (
+                <a
+                  key={tx.txHash}
+                  href={tx.explorerUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-2 block truncate font-mono text-[var(--accent)] hover:underline"
+                >
+                  {tx.network === "polygon_amoy" ? "Polygon tx" : "Registry"} · {tx.txHash.slice(0, 18)}…
+                </a>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </Card>

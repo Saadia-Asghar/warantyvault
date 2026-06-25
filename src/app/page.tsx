@@ -34,6 +34,10 @@ export default function HomePage() {
             Submit a complaint
           </Link>
           {" · "}
+          <Link href="/nearby" className="text-[var(--accent)] hover:underline">
+            Shops near me
+          </Link>
+          {" · "}
           <Link href="/forgot-password" className="text-[var(--accent)] hover:underline">
             Forgot password
           </Link>

@@ -49,6 +49,8 @@ model Shop {
   city           String
   sector         String?
   address        String
+  latitude       Float?
+  longitude      Float?
   category       String           @default("GENERAL")
   companyId      String?
   company        Company?         @relation(fields: [companyId], references: [id])
@@ -177,6 +179,8 @@ model ChainRecord {
   warrantyHash String
   txType       String
   txHash       String      @unique
+  network      String      @default("local")
+  /// local | polygon_amoy
   payload      String
   auditEventId String?     @unique
   auditEvent   AuditEvent? @relation(fields: [auditEventId], references: [id])
