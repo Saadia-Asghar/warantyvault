@@ -146,7 +146,7 @@ export default function IssueWarrantyPage() {
               <p className="mt-1 font-mono text-sm">{success.code}</p>
               <div className="mt-4 flex justify-center rounded-2xl bg-white p-4">
                 <QrDisplay
-                  value={`${typeof window !== "undefined" ? window.location.origin : ""}/verify?hash=${success.hash}`}
+                  value={`${typeof window !== "undefined" ? window.location.origin : ""}/verify?code=${encodeURIComponent(success.code)}`}
                   size={160}
                 />
               </div>

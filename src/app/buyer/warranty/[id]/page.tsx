@@ -119,7 +119,7 @@ export default function BuyerWarrantyDetailPage() {
   const elapsed = Math.max(0, total - days);
   const progress = Math.min(100, Math.round((elapsed / total) * 100));
   const halfway = 50;
-  const verifyUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/verify?hash=${warranty.warrantyHash}`;
+  const verifyUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/verify?code=${encodeURIComponent(warranty.warrantyCode)}`;
 
   const statusHeadline =
     warranty.status === "ACTIVE" && days > 0

@@ -295,6 +295,23 @@ export async function verifyWarrantyHash(hash: string) {
   };
 }
 
+export async function verifyWarranty(input: { hash?: string; warrantyCode?: string }) {
+  if (input.hash) {
+    return verifyWarrantyHash(input.hash);
+  }
+  if (input.warrantyCode) {
+    const row = await prisma.warranty.findUnique({
+      where: { warrantyCode: input.warrantyCode },
+      select: { warrantyHash: true },
+    });
+    if (!row) {
+      return { valid: false, expired: false, revoked: false, tampered: false, warranty: null };
+    }
+    return verifyWarrantyHash(row.warrantyHash);
+  }
+  return { valid: false, expired: false, revoked: false, tampered: false, warranty: null };
+}
+
 /** Any APPROVED outlet in the same company network can process claims */
 export async function canShopProcessClaim(
   claimingShopId: string,

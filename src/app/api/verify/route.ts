@@ -1,17 +1,48 @@
 import { NextRequest } from "next/server";
-import { verifyHashSchema } from "@/lib/validators";
+import { verifyInputSchema } from "@/lib/validators";
 import { handleApiError, jsonOk } from "@/lib/api";
-import { verifyWarrantyHash } from "@/lib/warranty-service";
+import { verifyWarranty } from "@/lib/warranty-service";
 import { verifyOnChain } from "@/lib/blockchain";
 import { maskPhone } from "@/lib/hash";
+import { getClientIp, rateLimit } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { hash } = verifyHashSchema.parse(body);
+    const ip = getClientIp(req);
+    if (!rateLimit(`verify:${ip}`, 90, 60_000)) {
+      return Response.json(
+        { success: false, error: "Too many verification requests. Wait a moment." },
+        { status: 429 }
+      );
+    }
 
-    const result = await verifyWarrantyHash(hash);
-    const chain = await verifyOnChain(hash);
+    const body = await req.json();
+    const input = verifyInputSchema.parse(body);
+
+    const result = await verifyWarranty({
+      hash: input.hash,
+      warrantyCode: input.warrantyCode,
+    });
+
+    const warrantyHash =
+      input.hash ??
+      result.warranty?.warrantyHash ??
+      undefined;
+
+    const chainFull = warrantyHash
+      ? await verifyOnChain(warrantyHash)
+      : {
+          mode: "local" as const,
+          registered: false,
+          polygonVerified: false,
+          transactions: [] as Array<{
+            txType: string;
+            txHash: string;
+            network: string;
+            createdAt: Date;
+            explorerUrl: string;
+          }>,
+        };
 
     if (!result.warranty) {
       return jsonOk({
@@ -19,10 +50,12 @@ export async function POST(req: NextRequest) {
         expired: false,
         revoked: false,
         tampered: false,
-        registered: chain.registered,
-        message: "Warranty not found in registry",
+        registered: chainFull.registered,
+        message: input.warrantyCode
+          ? "Warranty code not found"
+          : "Warranty not found in registry",
         warranty: null,
-        chain,
+        chain: chainFull,
       });
     }
 
@@ -32,10 +65,10 @@ export async function POST(req: NextRequest) {
         expired: false,
         revoked: false,
         tampered: true,
-        registered: chain.registered,
+        registered: chainFull.registered,
         message: "Integrity check failed — data may have been tampered with",
         warranty: null,
-        chain,
+        chain: chainFull,
       });
     }
 
@@ -44,14 +77,17 @@ export async function POST(req: NextRequest) {
       expired: result.expired,
       revoked: result.revoked,
       tampered: false,
-      registered: chain.registered,
+      registered: chainFull.registered,
       message: result.valid
         ? "Warranty is valid"
         : result.expired
           ? "Warranty has expired"
-          : "Warranty is not valid",
+          : result.revoked
+            ? "Warranty was revoked"
+            : "Warranty is not valid",
       warranty: {
         warrantyCode: result.warranty.warrantyCode,
+        warrantyHash: result.warranty.warrantyHash,
         productName: result.warranty.productName,
         policyType: result.warranty.policyType,
         status: result.warranty.status,
@@ -67,7 +103,7 @@ export async function POST(req: NextRequest) {
           ? maskPhone(result.warranty.buyerPhone)
           : null,
       },
-      chain,
+      chain: chainFull,
     });
   } catch (error) {
     return handleApiError(error);

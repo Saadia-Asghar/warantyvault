@@ -52,6 +52,8 @@ Open [http://localhost:3000](http://localhost:3000)
 |-------|---------|
 | `/company/warranties` | Browse network warranties, search, revoke, CSV export |
 | `/company/fraud` | Fraud flags + open claims across outlets |
+| `/nearby` | **Live map** — GPS, brand/city filters, OpenStreetMap |
+| `/verify` | **QR scanner** (camera + image upload) or short code `WV-PK-…` |
 | `/company` | Reinstate suspended outlets |
 | `/admin` | Complaint details, warranty search & revoke |
 

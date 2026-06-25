@@ -78,6 +78,15 @@ export const verifyHashSchema = z.object({
   hash: z.string().length(64),
 });
 
+export const verifyInputSchema = z
+  .object({
+    hash: z.string().length(64).optional(),
+    warrantyCode: z.string().min(8).max(40).optional(),
+  })
+  .refine((d) => Boolean(d.hash || d.warrantyCode), {
+    message: "Provide a warranty code or scan QR",
+  });
+
 export const policyTemplateSchema = z.object({
   name: z.string().min(2).max(100),
   category: z.enum(["MOBILE", "APPLIANCE", "GENERAL"]),

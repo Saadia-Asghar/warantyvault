@@ -21,6 +21,7 @@ type VerifyResult = {
   message: string;
   warranty: {
     warrantyCode: string;
+    warrantyHash?: string;
     productName: string;
     policyType: string;
     status: string;
@@ -44,7 +45,7 @@ export default function ShopVerifyPage() {
   const [rejectReason, setRejectReason] = useState("");
   const [showReject, setShowReject] = useState(false);
 
-  async function verify() {
+  async function verify(input?: { hash?: string; warrantyCode?: string }) {
     setLoading(true);
     setError("");
     setResult(null);
@@ -53,7 +54,11 @@ export default function ShopVerifyPage() {
       const res = await fetch("/api/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ hash: hash.trim() }),
+        body: JSON.stringify(
+          input?.warrantyCode
+            ? { warrantyCode: input.warrantyCode }
+            : { hash: (input?.hash ?? hash).trim() }
+        ),
       });
       const json = await res.json();
       if (!json.success) {
@@ -61,6 +66,9 @@ export default function ShopVerifyPage() {
         return;
       }
       setResult(json.data);
+      if (json.data?.warranty?.warrantyHash) {
+        setHash(json.data.warranty.warrantyHash);
+      }
     } catch {
       setError("Verification failed");
     } finally {
@@ -128,19 +136,24 @@ export default function ShopVerifyPage() {
         <Card>
           <div className="mt-6 space-y-4">
             <QrScanner
-              onScan={(value) => {
-                setHash(parseWarrantyHashFromScan(value));
+              onScan={(scan) => {
                 setError("");
+                if (scan.type === "hash") {
+                  setHash(scan.value);
+                  void verify({ hash: scan.value });
+                } else {
+                  void verify({ warrantyCode: scan.value });
+                }
               }}
             />
             <Input
-              label="Warranty hash (64 chars)"
+              label="Warranty code or hash"
               value={hash}
               onChange={(e) => setHash(parseWarrantyHashFromScan(e.target.value))}
-              placeholder="Paste SHA-256 hash from buyer app"
+              placeholder="Scan QR, or paste WV-PK-… / hash"
               className="font-mono text-xs"
             />
-            <Button onClick={verify} loading={loading} className="w-full">
+            <Button onClick={() => void verify()} loading={loading} className="w-full">
               Verify warranty
             </Button>
           </div>

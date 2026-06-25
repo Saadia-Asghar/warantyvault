@@ -2,18 +2,20 @@
 
 import { useState, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import Link from "next/link";
 import { Card, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatDate, policyTypeLabel } from "@/lib/utils";
-import { CheckCircle2, XCircle, AlertCircle } from "lucide-react";
+import { CheckCircle2, XCircle, AlertCircle, ChevronDown, ChevronUp } from "lucide-react";
 import { PolygonMetaMaskVerify } from "@/components/polygon-metamask-verify";
 import { ChainLiveStatus } from "@/components/chain-live-status";
+import { QrScanner, type ScanResult } from "@/components/qr-scanner";
 
 function VerifyContent() {
   const searchParams = useSearchParams();
+  const [warrantyCode, setWarrantyCode] = useState(searchParams.get("code") ?? "");
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const [hash, setHash] = useState(searchParams.get("hash") ?? "");
   const [result, setResult] = useState<{
     valid?: boolean;
@@ -28,56 +30,103 @@ function VerifyContent() {
   } | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const verifyHash = useCallback(async (h?: string) => {
-    const value = (h ?? hash).trim();
-    if (value.length !== 64) return;
+  const runVerify = useCallback(async (opts: { hash?: string; warrantyCode?: string }) => {
+    if (!opts.hash && !opts.warrantyCode) return;
     setLoading(true);
     const res = await fetch("/api/verify", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ hash: value }),
+      body: JSON.stringify(opts),
     });
     const json = await res.json();
     setLoading(false);
     if (json.success) setResult(json.data);
-  }, [hash]);
+    else setResult({ valid: false, message: json.error ?? "Verification failed" });
+  }, []);
 
   useEffect(() => {
+    const code = searchParams.get("code");
     const h = searchParams.get("hash");
-    if (h && h.length === 64) {
+    if (code) {
+      setWarrantyCode(code);
+      void runVerify({ warrantyCode: code });
+    } else if (h && h.length === 64) {
       setHash(h);
-      verifyHash(h);
+      void runVerify({ hash: h });
     }
-  }, [searchParams, verifyHash]);
+  }, [searchParams, runVerify]);
 
-  const valid = result?.valid as boolean;
-  const expired = result?.expired as boolean;
-  const warranty = result?.warranty as Record<string, string> | null;
+  function onScan(scan: ScanResult) {
+    if (scan.type === "code") {
+      setWarrantyCode(scan.value);
+      void runVerify({ warrantyCode: scan.value });
+    } else {
+      setHash(scan.value);
+      void runVerify({ hash: scan.value });
+    }
+  }
+
+  const valid = result?.valid;
+  const expired = result?.expired;
+  const warranty = result?.warranty;
 
   return (
     <Card>
-      <CardTitle>Public warranty verification</CardTitle>
+      <CardTitle>Verify warranty</CardTitle>
       <p className="mt-1 text-sm text-slate-400">
-        Anyone can verify a warranty hash — no login required
+        Scan QR — no hash to remember. Works with camera or photo upload.
       </p>
+
+      <div className="mt-6">
+        <QrScanner onScan={onScan} label="Point at warranty QR from buyer wallet or shop receipt" />
+      </div>
 
       <div className="mt-6 space-y-4">
         <Input
-          label="Warranty hash"
-          value={hash}
-          onChange={(e) => setHash(e.target.value)}
-          className="font-mono text-xs"
-          placeholder="64-character SHA-256 hash"
+          label="Warranty code (e.g. WV-PK-2026-1001)"
+          value={warrantyCode}
+          onChange={(e) => setWarrantyCode(e.target.value.toUpperCase())}
+          className="font-mono text-sm"
+          placeholder="WV-PK-2026-1001"
         />
         <Button
-          onClick={() => verifyHash()}
+          onClick={() => runVerify({ warrantyCode: warrantyCode.trim() })}
           loading={loading}
           className="w-full"
-          disabled={hash.trim().length !== 64}
+          disabled={warrantyCode.trim().length < 8}
         >
-          Verify
+          Verify by code
         </Button>
       </div>
+
+      <button
+        type="button"
+        onClick={() => setShowAdvanced(!showAdvanced)}
+        className="mt-4 flex w-full items-center justify-center gap-1 text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+      >
+        {showAdvanced ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+        Advanced: verify by hash
+      </button>
+
+      {showAdvanced && (
+        <div className="mt-3 space-y-3">
+          <Input
+            label="Warranty hash (64 chars)"
+            value={hash}
+            onChange={(e) => setHash(e.target.value)}
+            className="font-mono text-xs"
+          />
+          <Button
+            variant="secondary"
+            onClick={() => runVerify({ hash: hash.trim() })}
+            loading={loading}
+            className="w-full"
+            disabled={hash.trim().length !== 64}
+          >
+            Verify hash
+          </Button>
+        </div>
+      )}
 
       {result && (
         <div className="mt-6">
@@ -96,20 +145,21 @@ function VerifyContent() {
               <XCircle className="h-5 w-5 text-red-400" />
             )}
             <div>
-              <p className="font-medium text-white">{result.message as string}</p>
+              <p className="font-medium text-white">{result.message}</p>
               {warranty && (
                 <div className="mt-3 space-y-1 text-sm text-slate-400">
+                  <p className="font-mono text-[var(--accent)]">{warranty.warrantyCode}</p>
                   <p>{warranty.productName}</p>
-                  <p>{warranty.warrantyCode}</p>
                   <p>{policyTypeLabel(warranty.policyType)}</p>
                   <p>Until {formatDate(warranty.endDate)}</p>
                   {warranty.shopName && <p>Shop: {warranty.shopName}</p>}
+                  {warranty.brandName && <p>Brand: {warranty.brandName}</p>}
                 </div>
               )}
             </div>
           </div>
           <Badge variant={valid ? "active" : "expired"} className="mt-4">
-            {valid ? "Registered on-chain" : "Not valid"}
+            {valid ? "Valid warranty" : "Not valid"}
           </Badge>
           {result.chain && (
             <div className="mt-4 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-3 text-xs">
@@ -117,7 +167,7 @@ function VerifyContent() {
                 Blockchain:{" "}
                 {result.chain.mode === "polygon_amoy"
                   ? "Polygon Amoy (live testnet)"
-                  : "Local registry (configure Polygon for live anchoring)"}
+                  : "Audit registry (SHA-256)"}
               </p>
               {result.chain.polygonVerified && (
                 <p className="mt-1 text-emerald-400">Verified on Polygon contract</p>
@@ -135,7 +185,11 @@ function VerifyContent() {
               ))}
             </div>
           )}
-          <PolygonMetaMaskVerify warrantyHash={hash.trim()} />
+          <PolygonMetaMaskVerify
+            warrantyHash={
+              hash.length === 64 ? hash : undefined
+            }
+          />
         </div>
       )}
     </Card>
@@ -144,16 +198,13 @@ function VerifyContent() {
 
 export default function VerifyPage() {
   return (
-    <div className="min-h-screen bg-[var(--bg-deep)]">
-      <header className="border-b border-[var(--border)] px-4 py-3">
-        <Link href="/" className="text-sm text-[var(--text-muted)] hover:text-[var(--text-primary)]">
-          ← Home
-        </Link>
-        <h1 className="mt-2 text-lg font-semibold text-[var(--text-primary)]">Verify warranty</h1>
-        <p className="text-xs text-[var(--text-muted)]">No login required</p>
-      </header>
+    <div className="min-h-screen bg-[var(--bg-deep)] pb-8">
       <main className="mx-auto max-w-lg px-4 py-8">
-        <ChainLiveStatus />
+        <h1 className="text-lg font-semibold text-[var(--text-primary)]">Verify warranty</h1>
+        <p className="text-xs text-[var(--text-muted)]">Scan QR or enter short warranty code</p>
+        <div className="mt-4">
+          <ChainLiveStatus />
+        </div>
         <Suspense fallback={<p className="text-[var(--text-muted)]">Loading…</p>}>
           <VerifyContent />
         </Suspense>

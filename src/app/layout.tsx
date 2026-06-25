@@ -28,6 +28,12 @@ export const metadata: Metadata = {
   title: "WarrantyVault PK — Digital Shop Warranty",
   description:
     "Immutable digital shop warranties for Pakistani retail. Never lose your warranty again.",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    title: "WarrantyVault PK",
+    statusBarStyle: "default",
+  },
 };
 
 export const viewport: Viewport = {
