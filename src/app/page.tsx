@@ -12,12 +12,12 @@ export default function HomePage() {
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 sm:px-6">
           <Logo href="/" size={36} />
           <div className="flex items-center gap-2">
-            <Link href="/onboarding" className="btn-ghost hidden text-xs sm:inline-flex">
-              How it works
+            <Link href="/get-started" className="btn-ghost hidden text-xs sm:inline-flex">
+              Sign in
             </Link>
             <ThemeToggle />
             <Link href="/get-started" className="btn-primary btn-primary-sm">
-              Get started
+              Create account
             </Link>
           </div>
         </div>
@@ -28,7 +28,7 @@ export default function HomePage() {
       </main>
 
       <footer className="border-t border-[var(--border)] py-6 text-center text-xs text-[var(--text-tertiary)]">
-        <p>WarrantyVault PK · Digital shop warranties for Pakistan</p>
+        <p>ShopSeal PK · Digital shop sale & warranty records for Pakistan</p>
         <p className="mt-2">
           <Link href="/complaints" className="text-[var(--accent)] hover:underline">
             Submit a complaint

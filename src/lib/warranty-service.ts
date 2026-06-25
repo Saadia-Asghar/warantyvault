@@ -7,7 +7,7 @@ import {
 } from "@/lib/hash";
 import { recordAuditEvent } from "@/lib/audit";
 import { notifyBuyerByPhoneWithEmail, notifyUser, resolveEmail } from "@/lib/notify";
-import { sendSms, warrantyIssuedSms } from "@/lib/sms";
+import { sendSms, warrantyIssuedSms, resaleInitiatedShopSms, resaleCompletedShopSms } from "@/lib/sms";
 
 const REGISTERED_STATUSES = ["PENDING_TRANSFER", "PENDING_RESALE", "ACTIVE", "EXPIRED", "REVOKED"];
 
@@ -288,6 +288,19 @@ export async function initiateResaleTransfer(
     email: shopEmail,
   });
 
+  if (warranty.shop.phone) {
+    await sendSms(
+      warranty.shop.phone,
+      resaleInitiatedShopSms(
+        warranty.buyer?.name ?? warranty.buyerPhone ?? "Customer",
+        warranty.productName,
+        warranty.warrantyCode,
+        input.newBuyerName,
+        phone
+      )
+    );
+  }
+
   await notifyBuyerByPhoneWithEmail(phone, {
     title: "Warranty transfer waiting",
     body: `${warranty.buyer?.name ?? "A seller"} wants to transfer ${warranty.productName} to you. Open your wallet to accept.`,
@@ -380,6 +393,18 @@ export async function acceptResaleTransfer(warrantyId: string, buyerId: string) 
     linkUrl: "/shop/records",
     email: shopEmail,
   });
+
+  if (result.shop.phone) {
+    await sendSms(
+      result.shop.phone,
+      resaleCompletedShopSms(
+        result.productName,
+        result.warrantyCode,
+        buyer.name,
+        buyer.phone
+      )
+    );
+  }
 
   if (previousBuyer) {
     const prevEmail = await resolveEmail("buyer", previousBuyer.id);

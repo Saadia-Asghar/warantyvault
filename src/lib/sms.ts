@@ -51,12 +51,31 @@ export async function sendSms(to: string, body: string): Promise<{ ok: boolean; 
 }
 
 export function warrantyIssuedSms(shopName: string, productName: string): string {
-  return `WarrantyVault PK: ${shopName} issued a warranty for ${productName}. Open your wallet: ${appUrl()}/buyer`;
+  return `ShopSeal PK: ${shopName} issued a warranty for ${productName}. Open your wallet: ${appUrl()}/buyer`;
+}
+
+export function resaleInitiatedShopSms(
+  sellerName: string,
+  productName: string,
+  code: string,
+  newBuyerName: string,
+  newPhone: string
+): string {
+  return `ShopSeal PK: ${sellerName} started resale transfer of ${productName} (${code}) to ${newBuyerName} (${newPhone}). Check records in your dashboard.`;
+}
+
+export function resaleCompletedShopSms(
+  productName: string,
+  code: string,
+  newBuyerName: string,
+  newPhone: string
+): string {
+  return `ShopSeal PK: ${productName} (${code}) resold to ${newBuyerName} (${newPhone}). New owner has the warranty in their wallet.`;
 }
 
 export function expiryReminderSms(productName: string, days: number): string {
   if (days <= 0) {
-    return `WarrantyVault PK: Your warranty for ${productName} has expired.`;
+    return `ShopSeal PK: Your warranty for ${productName} has expired.`;
   }
-  return `WarrantyVault PK: Your warranty for ${productName} expires in ${days} day(s). View: ${appUrl()}/buyer`;
+  return `ShopSeal PK: Your warranty for ${productName} expires in ${days} day(s). View: ${appUrl()}/buyer`;
 }

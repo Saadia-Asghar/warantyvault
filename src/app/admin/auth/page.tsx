@@ -11,8 +11,8 @@ export default function AdminAuthPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [form, setForm] = useState({
-    email: "admin@warrantyvault.pk",
-    password: "admin1234",
+    email: "",
+    password: "",
   });
 
   async function submit(e: React.FormEvent) {

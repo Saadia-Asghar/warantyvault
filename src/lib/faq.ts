@@ -30,8 +30,12 @@ export const FAQ_BY_ROLE: Record<FaqRole, FaqItem[]> = {
       a: "Register with your phone number. When a shop records a sale to that number, tap Accept in your wallet. You must use the same phone the shop entered.",
     },
     {
+      q: "How do I create an account?",
+      a: "Tap Get started → choose Buyer, Shop, or Brand → Register tab. Use your real phone and email. No demo account is required for production use.",
+    },
+    {
       q: "Can I sell the item to someone else?",
-      a: "Yes — open the warranty, tap Transfer on resale, enter the new buyer's phone and name. They must accept in their wallet. The original shop and brand are notified for transparency.",
+      a: "Yes — open the warranty, tap Transfer on resale, enter the new buyer's phone and name. They accept in their wallet. The issuing shop (and brand, if network) get in-app and SMS notifications.",
     },
     {
       q: "Where can I claim warranty?",
@@ -61,7 +65,7 @@ export const FAQ_BY_ROLE: Record<FaqRole, FaqItem[]> = {
     },
     {
       q: "What if a warranty is resold?",
-      a: "You get a notification when the owner starts a resale transfer and when the new buyer accepts. Check Records to see current owner.",
+      a: "You get an in-app notification and SMS (when Twilio is configured) when the owner starts a resale transfer and when the new buyer accepts. Check Records for current owner.",
     },
     {
       q: "Verify a customer's QR?",

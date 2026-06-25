@@ -15,11 +15,11 @@ export default function CompanyAuthPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [form, setForm] = useState({
-    email: "dollarsmobile@demo.pk",
-    password: "demo1234",
-    legalName: "Dollar's Mobile Pakistan (Pvt) Ltd",
-    brandName: "Dollar's Mobile",
-    phone: "0511234567",
+    email: "",
+    password: "",
+    legalName: "",
+    brandName: "",
+    phone: "",
     ntn: "",
   });
 

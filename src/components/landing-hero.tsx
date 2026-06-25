@@ -20,7 +20,7 @@ const steps = [
   {
     icon: QrCode,
     title: "Buyer gets proof",
-    text: "Wallet, PDF, WhatsApp share — verify anywhere in the network with QR.",
+    text: "Wallet, PDF, WhatsApp share — verify anywhere. Resell? Transfer warranty; shop gets notified.",
   },
 ];
 
@@ -45,7 +45,7 @@ export function LandingHero() {
           <ul className="mt-2 space-y-1.5 text-sm text-[var(--text-muted)]">
             <li>Purchase wallet with sale amount & warranty</li>
             <li>Map of approved outlets near you</li>
-            <li>Chat with the shop that sold you the item</li>
+            <li>Transfer warranty when you resell — shop is notified</li>
           </ul>
           <p className="mt-4 text-sm font-medium text-[var(--text-primary)]">For shops & brands</p>
           <ul className="mt-2 space-y-1.5 text-sm text-[var(--text-muted)]">

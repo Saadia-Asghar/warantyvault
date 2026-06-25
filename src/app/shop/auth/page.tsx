@@ -20,13 +20,13 @@ export default function ShopAuthPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [form, setForm] = useState({
-    email: "g6@dollars.demo.pk",
-    password: "demo1234",
+    email: "",
+    password: "",
     shopName: "",
     ownerName: "",
     phone: "",
-    city: "Islamabad",
-    sector: "G-6",
+    city: "",
+    sector: "",
     address: "",
     category: "MOBILE",
     companyId: "",

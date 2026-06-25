@@ -17,10 +17,10 @@ export default function BuyerAuthPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [form, setForm] = useState({
-    phone: "03001234567",
-    email: "ahmed@demo.pk",
-    password: "demo1234",
-    name: "Ahmed Khan",
+    phone: "",
+    email: "",
+    password: "",
+    name: "",
   });
 
   async function submit(e: React.FormEvent) {
@@ -75,6 +75,7 @@ export default function BuyerAuthPage() {
             <Input
               label="Phone (+92)"
               required
+              placeholder="03001234567"
               value={form.phone}
               onChange={(e) => setForm({ ...form, phone: e.target.value })}
             />

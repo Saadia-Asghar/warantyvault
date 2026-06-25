@@ -66,7 +66,7 @@ export default function GetStartedPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.08 }}
         >
-          Choose your role before creating an account.
+          Choose your role and create a real account — registration is free.
         </motion.p>
 
         <div className="mt-8 space-y-3">
