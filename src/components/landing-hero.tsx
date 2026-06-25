@@ -2,9 +2,8 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { ChevronDown, MapPin, Network, QrCode, Shield } from "lucide-react";
+import { ChevronDown, MapPin, Network, QrCode } from "lucide-react";
 import { BRAND } from "@/lib/copy";
-import { DEMO_LOGINS, showDemoCredentials } from "@/lib/demo";
 
 const steps = [
   {
@@ -102,31 +101,6 @@ export function LandingHero() {
           </div>
         </div>
       </section>
-
-      {showDemoCredentials() && (
-        <section className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
-          <div className="panel p-5">
-            <div className="flex items-center gap-2">
-              <Shield className="h-5 w-5 text-[var(--accent)]" />
-              <p className="font-medium text-[var(--text-primary)]">Demo accounts</p>
-            </div>
-            <p className="mt-1 text-xs text-[var(--text-muted)]">
-              Password for all below: <span className="font-mono">demo1234</span> (admin uses{" "}
-              <span className="font-mono">admin1234</span>). Each role opens its own dashboard.
-            </p>
-            <ul className="mt-3 space-y-1.5 font-mono text-xs text-[var(--text-muted)]">
-              {DEMO_LOGINS.map((d) => (
-                <li key={d.login}>
-                  {d.role} · {d.login} / {d.password}
-                </li>
-              ))}
-            </ul>
-            <Link href="/get-started" className="btn-secondary mt-4 inline-flex text-sm">
-              Choose your role →
-            </Link>
-          </div>
-        </section>
-      )}
     </>
   );
 }

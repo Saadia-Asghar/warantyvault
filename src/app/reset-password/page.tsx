@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, KeyRound } from "lucide-react";
+import { AUTH_PLACEHOLDERS } from "@/lib/form-placeholders";
 
 function ResetPasswordForm() {
   const router = useRouter();
@@ -58,6 +59,8 @@ function ResetPasswordForm() {
           type="password"
           required
           minLength={8}
+          placeholder={AUTH_PLACEHOLDERS.password}
+          hint="At least 8 characters"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
@@ -66,6 +69,7 @@ function ResetPasswordForm() {
           type="password"
           required
           minLength={8}
+          placeholder={AUTH_PLACEHOLDERS.password}
           value={confirm}
           onChange={(e) => setConfirm(e.target.value)}
         />

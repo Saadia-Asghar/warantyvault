@@ -86,24 +86,61 @@ export function BuyerWalletClient({ name }: { name: string }) {
     void load();
   }
 
+  const applyWalletData = useCallback((payload: WalletData) => {
+    setData(payload);
+    setLastSync(new Date());
+    setLoading(false);
+  }, []);
+
   const load = useCallback(async () => {
     try {
       const res = await fetch("/api/warranties/buyer", { cache: "no-store" });
       const json = await res.json();
-      if (json.success) {
-        setData(json.data);
-        setLastSync(new Date());
-      }
+      if (json.success) applyWalletData(json.data);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [applyWalletData]);
 
   useEffect(() => {
-    void load();
-    const interval = setInterval(() => void load(), 15000);
-    return () => clearInterval(interval);
-  }, [load]);
+    let es: EventSource | null = null;
+    let fallbackInterval: ReturnType<typeof setInterval> | null = null;
+
+    const startPolling = () => {
+      void load();
+      fallbackInterval = setInterval(() => void load(), 10000);
+    };
+
+    if (typeof EventSource !== "undefined") {
+      es = new EventSource("/api/warranties/buyer/stream");
+      es.addEventListener("wallet", (event) => {
+        try {
+          const json = JSON.parse(event.data) as { success: boolean; data: WalletData };
+          if (json.success) applyWalletData(json.data);
+        } catch {
+          /* ignore malformed events */
+        }
+      });
+      es.onerror = () => {
+        es?.close();
+        es = null;
+        if (!fallbackInterval) startPolling();
+      };
+    } else {
+      startPolling();
+    }
+
+    const onVisible = () => {
+      if (document.visibilityState === "visible") void load();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+
+    return () => {
+      es?.close();
+      if (fallbackInterval) clearInterval(fallbackInterval);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [load, applyWalletData]);
 
   const summary = useMemo(() => {
     if (!data) return { active: 0, expiring: 0, nearest: null as number | null };

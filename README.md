@@ -39,7 +39,6 @@ Open [http://localhost:3000](http://localhost:3000)
 | `DATABASE_URL` | Pooled PostgreSQL (app queries) |
 | `DIRECT_URL` | Direct PostgreSQL (migrations at build) |
 | `AUTH_SECRET` | JWT signing secret (32+ characters) |
-| `NEXT_PUBLIC_SHOW_DEMO_CREDENTIALS` | `false` on production (hides demo passwords on landing) |
 | `NEXT_PUBLIC_VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` | Web push for chat (run `npm run vapid:generate`) |
 | `RESEND_API_KEY` | Email notifications (optional) |
 | `EMAIL_FROM` | Verified sender in Resend |
@@ -98,7 +97,7 @@ On `/verify`, users can **Connect MetaMask** (Polygon Amoy) to read the public c
 | Brand | dollarsmobile@demo.pk | demo1234 |
 | Shop G-6 | g6@dollars.demo.pk | demo1234 |
 | Shop I-8 | i8@dollars.demo.pk | demo1234 |
-| Buyer | 03001234567 / ahmed@demo.pk | demo1234 |
+| Buyer | ahmed@demo.pk | demo1234 |
 | Admin | admin@warrantyvault.pk | admin1234 |
 
 ## Flows

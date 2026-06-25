@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Building2, ArrowLeft } from "lucide-react";
+import { AUTH_PLACEHOLDERS } from "@/lib/form-placeholders";
 
 export default function CompanyAuthPage() {
   const router = useRouter();
@@ -73,6 +74,8 @@ export default function CompanyAuthPage() {
               label="Email"
               type="email"
               required
+              placeholder={AUTH_PLACEHOLDERS.email.company}
+              hint="Brand HQ login — same email used across your dealer network"
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
             />
@@ -81,6 +84,8 @@ export default function CompanyAuthPage() {
               type="password"
               required
               minLength={8}
+              placeholder={AUTH_PLACEHOLDERS.password}
+              hint="At least 8 characters"
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
             />
@@ -89,23 +94,31 @@ export default function CompanyAuthPage() {
                 <Input
                   label="Legal company name"
                   required
+                  placeholder={AUTH_PLACEHOLDERS.legalCompanyName}
+                  hint="Registered business name on your NTN / incorporation"
                   value={form.legalName}
                   onChange={(e) => setForm({ ...form, legalName: e.target.value })}
                 />
                 <Input
                   label="Brand name (shown to customers)"
                   required
+                  placeholder={AUTH_PLACEHOLDERS.brandName}
+                  hint="Short name printed on warranties and the shop map"
                   value={form.brandName}
                   onChange={(e) => setForm({ ...form, brandName: e.target.value })}
                 />
                 <Input
                   label="Phone"
                   required
+                  placeholder={AUTH_PLACEHOLDERS.phone}
+                  hint="Pakistani mobile — 11 digits, no spaces"
                   value={form.phone}
                   onChange={(e) => setForm({ ...form, phone: e.target.value })}
                 />
                 <Input
                   label="NTN (optional)"
+                  placeholder={AUTH_PLACEHOLDERS.ntn}
+                  hint="National Tax Number — e.g. 1234567-8"
                   value={form.ntn}
                   onChange={(e) => setForm({ ...form, ntn: e.target.value })}
                 />

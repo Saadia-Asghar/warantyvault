@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Shield } from "lucide-react";
 import { ROLE_COPY } from "@/lib/copy";
-import { DEMO_LOGINS, showDemoCredentials } from "@/lib/demo";
+import { AUTH_PLACEHOLDERS } from "@/lib/form-placeholders";
 
 export default function BuyerAuthPage() {
   const router = useRouter();
@@ -28,10 +28,14 @@ export default function BuyerAuthPage() {
     setLoading(true);
     setError("");
     try {
+      const payload =
+        mode === "login"
+          ? { action: mode, email: form.email, password: form.password }
+          : { action: mode, ...form };
       const res = await fetch("/api/auth/buyer", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: mode, ...form }),
+        body: JSON.stringify(payload),
       });
       const json = await res.json();
       if (!json.success) {
@@ -72,25 +76,42 @@ export default function BuyerAuthPage() {
           <AuthTabs mode={mode} onChange={setMode} />
 
           <form onSubmit={submit} className="mt-6 space-y-4">
-            <Input
-              label="Phone (+92)"
-              required
-              placeholder="03001234567"
-              value={form.phone}
-              onChange={(e) => setForm({ ...form, phone: e.target.value })}
-            />
-            {mode === "register" && (
+            {mode === "login" ? (
+              <Input
+                label="Email"
+                type="email"
+                required
+                autoComplete="email"
+                placeholder={AUTH_PLACEHOLDERS.email.buyer}
+                hint="Sign in with the email on your account"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+              />
+            ) : (
               <>
+                <Input
+                  label="Phone (+92)"
+                  required
+                  placeholder={AUTH_PLACEHOLDERS.phone}
+                  hint="Pakistani mobile — shops use this to link warranties to your wallet"
+                  value={form.phone}
+                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                />
                 <Input
                   label="Full name"
                   required
+                  placeholder={AUTH_PLACEHOLDERS.buyerName}
+                  hint="Name shown on your warranty wallet"
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                 />
                 <Input
-                  label="Email (for notifications & password reset)"
+                  label="Email"
                   type="email"
                   required
+                  autoComplete="email"
+                  placeholder={AUTH_PLACEHOLDERS.email.buyer}
+                  hint="Used to sign in, get reminders, and reset your password"
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                 />
@@ -101,6 +122,9 @@ export default function BuyerAuthPage() {
               type="password"
               required
               minLength={8}
+              autoComplete={mode === "login" ? "current-password" : "new-password"}
+              placeholder={AUTH_PLACEHOLDERS.password}
+              hint="At least 8 characters"
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
             />
@@ -117,12 +141,6 @@ export default function BuyerAuthPage() {
             )}
           </form>
 
-          {showDemoCredentials() && (
-            <p className="mt-4 rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)] px-3 py-2 text-xs text-[var(--text-muted)]">
-              <strong className="text-[var(--text-primary)]">Demo:</strong>{" "}
-              {DEMO_LOGINS.find((d) => d.role === "Buyer")?.login} / demo1234
-            </p>
-          )}
           <p className="mt-3 text-center text-xs text-[var(--text-tertiary)]">
             Shop owner?{" "}
             <Link href="/shop/auth" className="text-[var(--accent)] hover:underline">

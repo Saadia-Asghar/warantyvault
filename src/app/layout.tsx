@@ -3,7 +3,6 @@ import { Plus_Jakarta_Sans, IBM_Plex_Mono, Fraunces } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { PageBackBar } from "@/components/back-button";
-import { DemoModeBanner } from "@/components/demo-mode-banner";
 import { PushNotificationsBanner } from "@/components/push-notifications-banner";
 import { PwaInstallBanner } from "@/components/pwa-install-banner";
 import { HelpFaqPanel } from "@/components/help-faq-panel";
@@ -61,7 +60,6 @@ export default function RootLayout({
       <body className="min-h-screen bg-[var(--bg-deep)] font-sans text-[var(--text-primary)] antialiased">
         <ThemeProvider>
           <PageBackBar />
-          <DemoModeBanner />
           <PushNotificationsBanner />
           <PwaInstallBanner />
           <HelpFaqPanel />

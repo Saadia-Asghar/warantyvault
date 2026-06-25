@@ -19,19 +19,15 @@ export const FAQ_BY_ROLE: Record<FaqRole, FaqItem[]> = {
       q: "How do I verify a warranty?",
       a: "Open Verify from the menu or scan the QR on the buyer wallet / PDF certificate. You can verify by short code (e.g. WV-PK-2026-1001) without remembering the hash.",
     },
-    {
-      q: "Demo accounts — are they real?",
-      a: "Demo logins use sample data only. Do not issue real customer warranties in demo mode.",
-    },
   ],
   buyer: [
     {
       q: "How do I get a warranty in my wallet?",
-      a: "Register with your phone number. When a shop records a sale to that number, tap Accept in your wallet. You must use the same phone the shop entered.",
+      a: "Register with your phone number and email. When a shop records a sale to your phone, tap Accept in your wallet. The phone must match what the shop entered.",
     },
     {
       q: "How do I create an account?",
-      a: "Tap Get started → choose Buyer, Shop, or Brand → Register tab. Use your real phone and email. No demo account is required for production use.",
+      a: "Tap Get started → choose Buyer → Register. Use your real phone and email. Sign in with your email and password.",
     },
     {
       q: "Can I sell the item to someone else?",

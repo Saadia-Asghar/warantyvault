@@ -62,9 +62,9 @@ export default function BuyerProfilePage() {
             <p className="text-lg font-semibold text-[var(--text-primary)]">
               {session?.session?.name ?? "Buyer"}
             </p>
-            <p className="text-sm text-[var(--text-muted)]">{session?.session?.phone}</p>
-            {session?.session?.email && (
-              <p className="text-xs text-[var(--text-tertiary)]">{session.session.email}</p>
+            <p className="text-sm text-[var(--text-muted)]">{session?.session?.email}</p>
+            {session?.session?.phone && (
+              <p className="text-xs text-[var(--text-tertiary)]">Phone: {session.session.phone}</p>
             )}
           </div>
         </div>
