@@ -28,24 +28,14 @@ Add each variable for **Production** (and **Preview** if you want preview deploy
 
 ## Where to get database URLs
 
-### Supabase (you have project `gdmciybkdiuomowvpjyn`)
+### Supabase (project `gdmciybkdiuomowvpjyn`, region **ap-southeast-2**)
 
-1. [supabase.com/dashboard](https://supabase.com/dashboard) → your project  
-2. **Project Settings** → **Database** → **Connection string**  
-3. Copy **URI** twice:
-   - **Transaction pooler** → `DATABASE_URL` (port 6543, add `?pgbouncer=true`)
-   - **Session pooler** or **Direct** → `DIRECT_URL` (port 5432)
+Host prefix is **`aws-1-ap-southeast-2`** — copy exact URLs from dashboard if unsure.
 
-Replace `[YOUR-PASSWORD]` with your database password from the same page.
-
-**Direct connection (works for local dev — use for both vars):**
-```
-postgresql://postgres:[YOUR-PASSWORD]@db.gdmciybkdiuomowvpjyn.supabase.co:5432/postgres
-```
-
-**On Vercel (recommended):**
-- `DATABASE_URL` → **Transaction pooler** (port 6543, `?pgbouncer=true`)
-- `DIRECT_URL` → **Session** or direct (port 5432)
+| Variable | Connection |
+|----------|------------|
+| `DATABASE_URL` | `postgresql://postgres.gdmciybkdiuomowvpjyn:[PASSWORD]@aws-1-ap-southeast-2.pooler.supabase.com:6543/postgres?pgbouncer=true` |
+| `DIRECT_URL` | `postgresql://postgres.gdmciybkdiuomowvpjyn:[PASSWORD]@aws-1-ap-southeast-2.pooler.supabase.com:5432/postgres` |
 
 ### Neon
 
