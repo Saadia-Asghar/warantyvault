@@ -2,6 +2,10 @@ function appUrl() {
   return process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 }
 
+export function appBaseUrl() {
+  return appUrl();
+}
+
 function normalizePkPhone(phone: string): string {
   const digits = phone.replace(/\D/g, "");
   if (digits.startsWith("92")) return `+${digits}`;

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { showBrowserNotification } from "@/lib/browser-notify";
 import { formatDate } from "@/lib/utils";
 import { Loader2, Send } from "lucide-react";
 
@@ -40,21 +41,37 @@ export function ChatThreadView({
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
+  const lastCountRef = useRef(0);
 
   const load = useCallback(async () => {
     try {
       const res = await fetch(`/api/threads/${threadId}`, { cache: "no-store" });
       const json = await res.json();
       if (!json.success) throw new Error(json.error);
+      const nextMessages: Message[] = json.data.messages;
+      if (
+        lastCountRef.current > 0 &&
+        nextMessages.length > lastCountRef.current
+      ) {
+        const latest = nextMessages[nextMessages.length - 1];
+        if (latest.senderId !== userId) {
+          showBrowserNotification(
+            role === "buyer" ? "Shop replied" : "Customer message",
+            latest.body.slice(0, 120),
+            role === "buyer" ? `/buyer/messages/${threadId}` : `/shop/messages/${threadId}`
+          );
+        }
+      }
+      lastCountRef.current = nextMessages.length;
       setThread(json.data.thread);
-      setMessages(json.data.messages);
+      setMessages(nextMessages);
       setError("");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to load chat");
     } finally {
       setLoading(false);
     }
-  }, [threadId]);
+  }, [threadId, userId, role]);
 
   useEffect(() => {
     void load();

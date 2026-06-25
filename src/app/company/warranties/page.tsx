@@ -182,7 +182,15 @@ export default function CompanyWarrantiesPage() {
                     {warrantyStatusLabel(w.status)}
                   </Badge>
                 </div>
-                {w.status !== "REVOKED" && w.status !== "EXPIRED" && (
+                <div className="mt-2 flex flex-wrap gap-3">
+                  <a
+                    href={`/api/warranties/${w.id}/pdf`}
+                    className="text-xs text-[var(--accent)] hover:underline"
+                    download
+                  >
+                    PDF proof
+                  </a>
+                  {w.status !== "REVOKED" && w.status !== "EXPIRED" && (
                   <Button
                     variant="danger"
                     className="btn-primary-sm mt-3"
@@ -191,7 +199,8 @@ export default function CompanyWarrantiesPage() {
                   >
                     Revoke
                   </Button>
-                )}
+                  )}
+                </div>
               </div>
             ))
           )}

@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { PtaImeiCheckLink } from "@/components/pta-imei-link";
 import { QrScanner } from "@/components/qr-scanner";
 import { parseWarrantyHashFromScan } from "@/lib/qr-utils";
 import { formatDate, policyTypeLabel } from "@/lib/utils";
@@ -218,6 +219,9 @@ export default function ShopVerifyPage() {
                     {formatDate(result.warranty.endDate)}
                   </p>
                   <p className="text-slate-400">{result.warranty.termsEn}</p>
+                  <div className="mt-3">
+                    <PtaImeiCheckLink compact />
+                  </div>
                 </div>
               )}
 

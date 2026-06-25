@@ -39,7 +39,8 @@ Open [http://localhost:3000](http://localhost:3000)
 | `DATABASE_URL` | Pooled PostgreSQL (app queries) |
 | `DIRECT_URL` | Direct PostgreSQL (migrations at build) |
 | `AUTH_SECRET` | JWT signing secret (32+ characters) |
-| `NEXT_PUBLIC_APP_URL` | `https://your-app.vercel.app` |
+| `NEXT_PUBLIC_SHOW_DEMO_CREDENTIALS` | `false` on production (hides demo passwords on landing) |
+| `NEXT_PUBLIC_VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` | Web push for chat (run `npm run vapid:generate`) |
 | `RESEND_API_KEY` | Email notifications (optional) |
 | `EMAIL_FROM` | Verified sender in Resend |
 | `ADMIN_EMAIL` | Admin / complaint notifications |
@@ -55,7 +56,8 @@ Open [http://localhost:3000](http://localhost:3000)
 | `/nearby` | **Live map** — GPS, brand/city filters, OpenStreetMap |
 | `/verify` | **QR scanner** (camera + image upload) or short code `WV-PK-…` |
 | `/buyer/messages` | **Chat** with shopkeepers (complaints & support) |
-| `/shop/messages` | Shop inbox — reply to customers |
+| `/shop/records` | Search all warranties incl. expired · PDF proof |
+| `/buyer/warranty/[id]` | Download PDF · WhatsApp share · PTA check |
 
 **Mobile app:** Install from browser (PWA), download page **`/download`**, or build APK — see **[docs/MOBILE_APK_DEPLOY.md](docs/MOBILE_APK_DEPLOY.md)**
 

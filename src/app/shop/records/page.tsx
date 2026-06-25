@@ -160,6 +160,13 @@ export default function ShopRecordsPage() {
                   >
                     Verify this warranty →
                   </Link>
+                  <a
+                    href={`/api/warranties/${w.id}/pdf`}
+                    className="ml-3 mt-2 inline-block text-xs text-[var(--text-muted)] hover:underline"
+                    download
+                  >
+                    PDF proof
+                  </a>
                 </div>
               );
             })

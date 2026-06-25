@@ -3,6 +3,7 @@ import {
   type NotificationRole,
 } from "@/lib/notifications";
 import { sendAdminAlert, sendEventEmail } from "@/lib/email";
+import { sendPushToUser } from "@/lib/push-notifications";
 import { prisma } from "@/lib/prisma";
 
 export async function notifyUser(input: {
@@ -26,6 +27,14 @@ export async function notifyUser(input: {
   if (input.email) {
     await sendEventEmail(input.email, input.title, input.body, input.linkUrl);
   }
+
+  await sendPushToUser({
+    userId: input.userId,
+    userRole: input.userRole,
+    title: input.title,
+    body: input.body,
+    linkUrl: input.linkUrl,
+  });
 
   await sendAdminAlert(input.type, `${input.title} — ${input.body}`);
 }

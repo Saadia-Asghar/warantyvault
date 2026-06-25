@@ -324,3 +324,15 @@ model EmailLog {
 
   @@index([createdAt])
 }
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  userRole  String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  @@index([userId, userRole])
+}

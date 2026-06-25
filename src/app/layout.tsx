@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { PageBackBar } from "@/components/back-button";
 import { DemoModeBanner } from "@/components/demo-mode-banner";
+import { PushNotificationsBanner } from "@/components/push-notifications-banner";
 import { PwaInstallBanner } from "@/components/pwa-install-banner";
 import { BRAND } from "@/lib/copy";
 
@@ -53,6 +54,7 @@ export default function RootLayout({
         <ThemeProvider>
           <PageBackBar />
           <DemoModeBanner />
+          <PushNotificationsBanner />
           <PwaInstallBanner />
           {children}
         </ThemeProvider>

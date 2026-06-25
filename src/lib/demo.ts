@@ -32,3 +32,11 @@ export const DEMO_LOGINS = [
   { role: "Brand", login: "dollarsmobile@demo.pk", password: "demo1234" },
   { role: "Admin", login: "admin@warrantyvault.pk", password: "admin1234" },
 ] as const;
+
+/** Show demo logins on landing/auth — off in production unless explicitly enabled */
+export function showDemoCredentials(): boolean {
+  const flag = process.env.NEXT_PUBLIC_SHOW_DEMO_CREDENTIALS;
+  if (flag === "true") return true;
+  if (flag === "false") return false;
+  return process.env.NODE_ENV === "development";
+}

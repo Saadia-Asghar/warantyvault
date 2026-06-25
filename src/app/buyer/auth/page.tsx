@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Shield } from "lucide-react";
 import { ROLE_COPY } from "@/lib/copy";
-import { DEMO_LOGINS } from "@/lib/demo";
+import { DEMO_LOGINS, showDemoCredentials } from "@/lib/demo";
 
 export default function BuyerAuthPage() {
   const router = useRouter();
@@ -116,10 +116,12 @@ export default function BuyerAuthPage() {
             )}
           </form>
 
-          <p className="mt-4 rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)] px-3 py-2 text-xs text-[var(--text-muted)]">
-            <strong className="text-[var(--text-primary)]">Demo:</strong>{" "}
-            {DEMO_LOGINS.find((d) => d.role === "Buyer")?.login} / demo1234
-          </p>
+          {showDemoCredentials() && (
+            <p className="mt-4 rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)] px-3 py-2 text-xs text-[var(--text-muted)]">
+              <strong className="text-[var(--text-primary)]">Demo:</strong>{" "}
+              {DEMO_LOGINS.find((d) => d.role === "Buyer")?.login} / demo1234
+            </p>
+          )}
           <p className="mt-3 text-center text-xs text-[var(--text-tertiary)]">
             Shop owner?{" "}
             <Link href="/shop/auth" className="text-[var(--accent)] hover:underline">

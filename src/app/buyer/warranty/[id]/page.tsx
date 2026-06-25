@@ -16,6 +16,7 @@ import {
   warrantyStatusLabel,
 } from "@/lib/utils";
 import { AuditTimeline } from "@/components/audit-timeline";
+import { WarrantyProofActions } from "@/components/warranty-proof-actions";
 import { ArrowLeft, Check, Copy, ExternalLink, Shield } from "lucide-react";
 
 type WarrantyDetail = {
@@ -33,6 +34,7 @@ type WarrantyDetail = {
   chainTxRegister: string | null;
   purchaseSector: string | null;
   purchaseCity: string | null;
+  serialImei: string | null;
   shop: { shopName: string; city: string; phone: string };
   company?: { brandName: string } | null;
   claims: Array<{ id: string; status: string; openedAt: string }>;
@@ -253,6 +255,23 @@ export default function BuyerWarrantyDetailPage() {
               </Link>
             )}
           </>
+        )}
+
+        {(warranty.status === "ACTIVE" ||
+          warranty.status === "EXPIRED" ||
+          warranty.status === "REVOKED") && (
+          <WarrantyProofActions
+            warrantyId={id}
+            warrantyCode={warranty.warrantyCode}
+            productName={warranty.productName}
+            status={warranty.status}
+            startDate={warranty.startDate}
+            endDate={warranty.endDate}
+            shopName={warranty.shop.shopName}
+            brandName={warranty.company?.brandName}
+            serialImei={warranty.serialImei}
+            verifyUrl={verifyUrl}
+          />
         )}
 
         <div className="mt-8 space-y-3 rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] p-4 text-sm">
