@@ -34,9 +34,9 @@ export async function POST(req: NextRequest) {
           sector: data.sector,
           address: data.address,
           category: data.category,
-          companyId: data.joinNetwork && data.companyId ? data.companyId : null,
+          companyId: data.joinNetwork && data.companyId?.trim() ? data.companyId.trim() : null,
           approvalStatus:
-            data.joinNetwork && data.companyId ? "PENDING" : "STANDALONE",
+            data.joinNetwork && data.companyId?.trim() ? "PENDING" : "STANDALONE",
           policies: {
             create: [
               {

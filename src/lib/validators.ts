@@ -1,18 +1,23 @@
 import { z } from "zod";
 
-export const shopRegisterSchema = z.object({
-  email: z.string().email("Valid email required"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
-  shopName: z.string().min(2).max(100),
-  ownerName: z.string().min(2).max(100),
-  phone: z.string().min(10).max(15),
-  city: z.string().min(2).max(50),
-  sector: z.string().max(50).optional(),
-  address: z.string().min(5).max(200),
-  category: z.enum(["MOBILE", "APPLIANCE", "GENERAL"]).default("GENERAL"),
-  companyId: z.string().optional(),
-  joinNetwork: z.boolean().optional(),
-});
+export const shopRegisterSchema = z
+  .object({
+    email: z.string().email("Valid email required"),
+    password: z.string().min(8, "Password must be at least 8 characters"),
+    shopName: z.string().min(2, "Shop name is too short").max(100),
+    ownerName: z.string().min(2, "Owner name is too short").max(100),
+    phone: z.string().min(10, "Enter a valid Pakistani phone (10+ digits)").max(15),
+    city: z.string().min(2, "City is required").max(50),
+    sector: z.string().max(50).optional(),
+    address: z.string().min(2, "Address is too short — add plot/street or sector (e.g. G-6 Markaz)").max(200),
+    category: z.enum(["MOBILE", "APPLIANCE", "GENERAL"]).default("GENERAL"),
+    companyId: z.string().optional(),
+    joinNetwork: z.boolean().optional(),
+  })
+  .refine((d) => !d.joinNetwork || Boolean(d.companyId?.trim()), {
+    message: "Select a brand to join the dealer network",
+    path: ["companyId"],
+  });
 
 export const companyRegisterSchema = z.object({
   email: z.string().email(),

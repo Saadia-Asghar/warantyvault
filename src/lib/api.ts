@@ -11,7 +11,12 @@ export function jsonError(message: string, status = 400) {
 
 export function handleApiError(error: unknown) {
   if (error instanceof ZodError) {
-    const msg = error.issues.map((i) => i.message).join(", ");
+    const msg = error.issues
+      .map((i) => {
+        const field = i.path.length ? `${String(i.path.join("."))}: ` : "";
+        return `${field}${i.message}`;
+      })
+      .join("; ");
     return jsonError(msg, 422);
   }
   if (error instanceof Error) {

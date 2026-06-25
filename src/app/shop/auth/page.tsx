@@ -139,9 +139,10 @@ export default function ShopAuthPage() {
                 <Input
                   label="Full address"
                   required
+                  minLength={2}
                   value={form.address}
                   onChange={(e) => setForm({ ...form, address: e.target.value })}
-                  placeholder="Plot 12, Main Boulevard, G-6"
+                  placeholder="G-6 Markaz, Plot 12, or full street address"
                 />
                 <label className="flex items-center gap-2 text-sm text-[var(--text-muted)]">
                   <input
