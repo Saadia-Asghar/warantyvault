@@ -48,6 +48,13 @@ export async function POST(req: NextRequest) {
       return jsonError("Your outlet application was rejected by the brand.", 403);
     }
 
+    if (shop.approvalStatus === "SUSPENDED") {
+      return jsonError(
+        "Your outlet is suspended by the brand. You cannot issue warranties until reinstated.",
+        403
+      );
+    }
+
     const body = await req.json();
     const data = issueWarrantySchema.parse(body);
 

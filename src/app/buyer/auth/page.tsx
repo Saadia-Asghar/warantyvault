@@ -42,7 +42,7 @@ export default function BuyerAuthPage() {
         setError(json.error ?? "Something went wrong");
         return;
       }
-      router.push("/buyer");
+      router.push(mode === "register" ? "/buyer/profile?welcome=1" : "/buyer");
       router.refresh();
     } catch {
       setError("Network error");

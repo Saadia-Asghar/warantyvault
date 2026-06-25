@@ -26,6 +26,10 @@ export const FAQ_BY_ROLE: Record<FaqRole, FaqItem[]> = {
       a: "Register with your phone number and email. When a shop records a sale to your phone, tap Accept in your wallet. The phone must match what the shop entered.",
     },
     {
+      q: "What is the hash? Do I need MetaMask?",
+      a: "Every warranty/sale gets a SHA-256 hash (price, terms, shop, buyer phone) — that is your proof, not your Gmail. MetaMask is optional: link it in Profile to sign high-value or resale transfers. Login stays phone/email + password.",
+    },
+    {
       q: "How do I create an account?",
       a: "Tap Get started → choose Buyer → Register. Use your real phone and email. Sign in with your email and password.",
     },

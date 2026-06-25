@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Mail } from "lucide-react";
-import { AUTH_PLACEHOLDERS, authEmailPlaceholder } from "@/lib/form-placeholders";
+import { authEmailPlaceholder } from "@/lib/form-placeholders";
 
 const ROLES = [
   { id: "buyer", label: "Buyer (wallet)" },

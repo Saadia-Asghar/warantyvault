@@ -113,7 +113,7 @@ export default function ShopAuthPage() {
         setFormError(firstFormError(errors));
         return;
       }
-      router.push("/shop");
+      router.push(mode === "register" ? "/shop/profile?welcome=1" : "/shop");
       router.refresh();
     } catch {
       setFormError("Network error — check your connection and try again.");

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { BuyerBottomNav } from "@/components/buyer-bottom-nav";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { WalletLinkCard } from "@/components/wallet-link-card";
@@ -10,6 +11,8 @@ import { Input } from "@/components/ui/input";
 import { LogOut, User } from "lucide-react";
 
 export default function BuyerProfilePage() {
+  const searchParams = useSearchParams();
+  const welcome = searchParams.get("welcome") === "1";
   const [session, setSession] = useState<{
     session: { name?: string; email?: string; phone?: string };
   } | null>(null);
@@ -70,8 +73,17 @@ export default function BuyerProfilePage() {
           </div>
         </div>
 
+        {welcome && (
+          <div className="alert-banner alert-banner-info mt-4">
+            <p className="text-sm">
+              <strong>Account created.</strong> Your phone is your login identity. Warranties are
+              sealed with a SHA-256 hash. Optionally link MetaMask below for signed resale transfers.
+            </p>
+          </div>
+        )}
+
         <div className="mt-6">
-          <WalletLinkCard />
+          <WalletLinkCard highlight={welcome} />
         </div>
 
         <section className="panel mt-4 p-4">

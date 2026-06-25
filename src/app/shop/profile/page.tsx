@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { ShopBottomNav } from "@/components/shop-bottom-nav";
 import { WalletLinkCard } from "@/components/wallet-link-card";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,8 @@ import { Input } from "@/components/ui/input";
 import { ArrowLeft, LogOut, Store } from "lucide-react";
 
 export default function ShopProfilePage() {
+  const searchParams = useSearchParams();
+  const welcome = searchParams.get("welcome") === "1";
   const [session, setSession] = useState<{
     session: { name?: string; email?: string };
   } | null>(null);
@@ -50,7 +53,16 @@ export default function ShopProfilePage() {
           </div>
         </div>
 
-        <WalletLinkCard />
+        {welcome && (
+          <div className="alert-banner alert-banner-info mb-4">
+            <p className="text-sm">
+              <strong>Outlet registered.</strong> Brand HQ must approve before network warranties.
+              Each sale gets a tamper-proof hash. Link MetaMask optionally for blockchain identity.
+            </p>
+          </div>
+        )}
+
+        <WalletLinkCard highlight={welcome} />
 
         <section className="panel mt-4 p-4">
           <h2 className="text-sm font-semibold text-[var(--text-primary)]">Password</h2>

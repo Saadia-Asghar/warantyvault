@@ -11,7 +11,7 @@ type WalletState = {
   walletLinkedAt: string | null;
 };
 
-export function WalletLinkCard() {
+export function WalletLinkCard({ highlight }: { highlight?: boolean }) {
   const [wallet, setWallet] = useState<WalletState | null>(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -90,7 +90,7 @@ export function WalletLinkCard() {
   }
 
   return (
-    <section className="panel p-4">
+    <section className={`panel p-4 ${highlight ? "ring-2 ring-[var(--accent)]/40" : ""}`}>
       <div className="flex items-center gap-2">
         <Wallet className="h-5 w-5 text-[var(--accent)]" />
         <h2 className="text-sm font-semibold text-[var(--text-primary)]">Blockchain wallet</h2>
