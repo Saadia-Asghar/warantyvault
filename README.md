@@ -1,36 +1,59 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# WarrantyVault PK
 
-## Getting Started
+Digital shop warranty platform for Pakistani retail — immutable hashes, buyer wallet, shop portal.
 
-First, run the development server:
+## Quick start
 
 ```bash
+cd warrantyvault-pk
+npm install
+npm run db:push
+npm run db:seed
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Demo accounts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Role | Login | Password |
+|------|-------|----------|
+| Shop | cityelectronics@demo.pk | demo1234 |
+| Buyer | 03001234567 | demo1234 |
+| Admin | admin@warrantyvault.pk | admin1234 |
 
-## Learn More
+## Flows
 
-To learn more about Next.js, take a look at the following resources:
+1. **Shop** → Issue warranty → registered on chain ledger
+2. **Buyer** → Accept transfer → QR + hash in wallet
+3. **Shop** → Verify hash → Open claim → Complete
+4. **Public** → `/verify?hash=...` — no login
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Stack
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Next.js 14, TypeScript, Tailwind
+- Prisma + SQLite
+- JWT (httpOnly) + bcrypt
+- SHA-256 warranty hashes + chain registry
+- Zod API validation
 
-## Deploy on Vercel
+## Scripts
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- `npm run dev` — development server
+- `npm run build` — production build
+- `npm run db:seed` — reset demo data
+- `npm run db:reset` — wipe + seed
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Environment
+
+Copy `.env.example` to `.env` and set:
+
+- `DATABASE_URL` — SQLite path
+- `AUTH_SECRET` — min 32 characters
+- `NEXT_PUBLIC_APP_URL` — app URL for QR links
+
+## Hackathon
+
+UBL National Innovation Hackathon 2026 — Form 2
+
+Disclaimer: Shop warranty platform. Not official OEM or PTA warranty.

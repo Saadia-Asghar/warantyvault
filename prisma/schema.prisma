@@ -1,0 +1,283 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+/// Brand / franchise HQ — e.g. "Dollar's Mobile", Haier dealer network
+model Company {
+  id           String                  @id @default(cuid())
+  email        String                  @unique
+  passwordHash String
+  legalName    String
+  brandName    String
+  phone        String
+  ntn          String?
+  createdAt    DateTime                @default(now())
+  outlets      Shop[]
+  policies     CompanyPolicyTemplate[]
+  warranties   Warranty[]
+}
+
+model CompanyPolicyTemplate {
+  id             String   @id @default(cuid())
+  companyId      String
+  company        Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  name           String
+  category       String
+  policyType     String
+  durationMonths Int
+  exclusions     String   @default("")
+  termsEn        String
+  termsUr        String
+  isDefault      Boolean  @default(false)
+  createdAt      DateTime @default(now())
+}
+
+/// Individual outlet — must be approved by Company to issue network warranties
+model Shop {
+  id             String           @id @default(cuid())
+  email          String           @unique
+  passwordHash   String
+  shopName       String
+  ownerName      String
+  phone          String
+  city           String
+  sector         String?
+  address        String
+  category       String           @default("GENERAL")
+  companyId      String?
+  company        Company?         @relation(fields: [companyId], references: [id])
+  outletCode     String?
+  approvalStatus String           @default("STANDALONE")
+  /// STANDALONE | PENDING | APPROVED | REJECTED
+  createdAt      DateTime         @default(now())
+  policies       PolicyTemplate[]
+  warranties     Warranty[]       @relation("IssuingShop")
+  claims         Claim[]
+  fraudFlags     FraudFlag[]
+
+  @@index([companyId])
+  @@index([approvalStatus])
+}
+
+model Buyer {
+  id           String     @id @default(cuid())
+  phone        String     @unique
+  email        String?    @unique
+  passwordHash String
+  name         String
+  createdAt    DateTime   @default(now())
+  warranties   Warranty[]
+}
+
+model Admin {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+}
+
+model PolicyTemplate {
+  id              String   @id @default(cuid())
+  shopId          String
+  shop            Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  name            String
+  category        String
+  policyType      String
+  durationMonths  Int
+  exclusions      String   @default("")
+  termsEn         String
+  termsUr         String
+  isDefault       Boolean  @default(false)
+  createdAt       DateTime @default(now())
+}
+
+model Warranty {
+  id               String        @id @default(cuid())
+  warrantyCode     String        @unique
+  companyId        String?
+  company          Company?      @relation(fields: [companyId], references: [id])
+  shopId           String
+  shop             Shop          @relation("IssuingShop", fields: [shopId], references: [id], onDelete: Cascade)
+  buyerId          String?
+  buyer            Buyer?        @relation(fields: [buyerId], references: [id])
+  productName      String
+  category         String
+  serialImei       String?
+  purchaseAmount   Float?
+  policyType       String
+  durationMonths   Int
+  exclusions       String        @default("")
+  termsEn          String
+  termsUr          String
+  startDate        DateTime
+  endDate          DateTime
+  status           String        @default("DRAFT")
+  warrantyHash     String        @unique
+  chainTxRegister  String?
+  chainTxTransfer  String?
+  buyerPhone       String?
+  buyerName        String?
+  purchaseCity     String?
+  purchaseSector   String?
+  registeredAt     DateTime?
+  createdAt        DateTime      @default(now())
+  claims           Claim[]
+  reminders        ReminderLog[]
+
+  @@index([shopId])
+  @@index([companyId])
+  @@index([buyerId])
+  @@index([serialImei])
+  @@index([status])
+}
+
+model Claim {
+  id               String    @id @default(cuid())
+  warrantyId       String
+  warranty         Warranty  @relation(fields: [warrantyId], references: [id], onDelete: Cascade)
+  shopId           String
+  shop             Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  /// Outlet where claim is being processed (can differ from issuing shop)
+  status           String    @default("OPENED")
+  issueDescription String
+  rejectionReason  String?
+  claimHash        String    @unique
+  chainTxClaim     String?
+  openedAt         DateTime  @default(now())
+  closedAt         DateTime?
+
+  @@index([warrantyId])
+}
+
+model ReminderLog {
+  id           String   @id @default(cuid())
+  warrantyId   String
+  warranty     Warranty @relation(fields: [warrantyId], references: [id], onDelete: Cascade)
+  reminderType String
+  sentAt       DateTime @default(now())
+}
+
+model FraudFlag {
+  id         String   @id @default(cuid())
+  shopId     String?
+  shop       Shop?    @relation(fields: [shopId], references: [id])
+  serialImei String
+  reason     String
+  createdAt  DateTime @default(now())
+}
+
+model ChainRecord {
+  id           String      @id @default(cuid())
+  warrantyHash String
+  txType       String
+  txHash       String      @unique
+  payload      String
+  auditEventId String?     @unique
+  auditEvent   AuditEvent? @relation(fields: [auditEventId], references: [id])
+  createdAt    DateTime    @default(now())
+
+  @@index([warrantyHash])
+}
+
+model AuditEvent {
+  id           String       @id @default(cuid())
+  eventType    String
+  actorId      String?
+  actorRole    String?
+  entityType   String
+  entityId     String
+  warrantyId   String?
+  payloadJson  String
+  prevEventHash String?
+  eventHash    String       @unique
+  createdAt    DateTime     @default(now())
+  chainRecord  ChainRecord?
+
+  @@index([warrantyId])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
+
+model UserPreference {
+  id        String   @id @default(cuid())
+  userId    String
+  userRole  String
+  key       String
+  value     String
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, userRole, key])
+  @@index([userId, userRole])
+}
+
+model PendingWarrantyAlert {
+  id         String   @id @default(cuid())
+  buyerPhone String
+  warrantyId String
+  delivered  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  @@index([buyerPhone, delivered])
+}
+
+/// In-app notifications (SMS optional later)
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  userRole  String
+  /// shop | buyer | company
+  title     String
+  body      String
+  type      String
+  linkUrl   String?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId, userRole, read])
+  @@index([createdAt])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  token     String    @unique
+  userRole  String
+  userId    String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, userRole])
+}
+
+model Complaint {
+  id        String   @id @default(cuid())
+  userId    String?
+  userRole  String?
+  name      String
+  email     String
+  phone     String?
+  subject   String
+  message   String
+  status    String   @default("OPEN")
+  createdAt DateTime @default(now())
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+model EmailLog {
+  id        String   @id @default(cuid())
+  to        String
+  subject   String
+  body      String
+  status    String
+  error     String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}

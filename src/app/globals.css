@@ -2,26 +2,209 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Paper Trust — warm pastels, light default */
+:root,
+[data-theme="light"] {
+  --bg-deep: #fdf9f5;
+  --bg-surface: #ffffff;
+  --bg-elevated: #f5f0ea;
+  --text-primary: #2d3142;
+  --text-muted: #6b7289;
+  --text-tertiary: #9aa3b5;
+  --border: rgba(45, 49, 66, 0.1);
+  --accent: #d4715a;
+  --accent-hover: #c4614d;
+  --accent-muted: rgba(212, 113, 90, 0.14);
+  --accent-secondary: #7b9fd4;
+  --pastel-mint: #c8e6d0;
+  --pastel-lavender: #ddd0f0;
+  --pastel-peach: #f5d5c8;
+  --pastel-sky: #b8d4e3;
+  --warning: #c47a3a;
+  --warning-muted: rgba(245, 213, 200, 0.5);
+  --danger: #c44d4d;
+  --danger-muted: rgba(220, 38, 38, 0.1);
+  --info: #5a8fb8;
+  --shadow-soft: 0 4px 24px rgba(45, 49, 66, 0.08);
+  color-scheme: light;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+[data-theme="dark"] {
+  --bg-deep: #14161c;
+  --bg-surface: #1c1f27;
+  --bg-elevated: #252932;
+  --text-primary: #eceef2;
+  --text-muted: #9aa3b5;
+  --text-tertiary: #6b7289;
+  --border: rgba(255, 255, 255, 0.08);
+  --accent: #e8967a;
+  --accent-hover: #f0a88e;
+  --accent-muted: rgba(232, 150, 122, 0.15);
+  --accent-secondary: #8fafe0;
+  --pastel-mint: rgba(200, 230, 208, 0.15);
+  --pastel-lavender: rgba(221, 208, 240, 0.12);
+  --pastel-peach: rgba(245, 213, 200, 0.12);
+  --pastel-sky: rgba(184, 212, 227, 0.12);
+  --warning: #e0a060;
+  --warning-muted: rgba(245, 213, 200, 0.12);
+  --danger: #e07070;
+  --danger-muted: rgba(220, 38, 38, 0.15);
+  --info: #7bafd4;
+  --shadow-soft: 0 4px 24px rgba(0, 0, 0, 0.35);
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  color: var(--text-primary);
+  background: var(--bg-deep);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
+@layer components {
+  .panel {
+    @apply rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)];
+    box-shadow: var(--shadow-soft);
+  }
+
+  .panel-elevated {
+    @apply rounded-2xl border border-[var(--border)] bg-[var(--bg-elevated)];
+  }
+
+  .summary-card {
+    @apply rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] p-6;
+    box-shadow: var(--shadow-soft);
+  }
+
+  .text-accent {
+    color: var(--accent);
+  }
+
+  .btn-primary {
+    @apply inline-flex min-h-[52px] items-center justify-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition active:scale-[0.98] hover:bg-[var(--accent-hover)] disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .btn-secondary {
+    @apply inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)] px-4 py-2.5 text-sm font-medium text-[var(--text-primary)] transition active:scale-[0.98] hover:opacity-90 disabled:opacity-50;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium text-[var(--text-muted)] transition hover:bg-[var(--bg-elevated)] hover:text-[var(--text-primary)];
+  }
+
+  .btn-primary-sm {
+    @apply min-h-[44px] px-4 py-2.5 text-sm;
+  }
+
+  .input-field {
+    @apply w-full rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)] px-4 py-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-muted)];
+  }
+
+  .label-field {
+    @apply mb-1.5 block text-xs font-medium uppercase tracking-wider text-[var(--text-muted)];
+  }
+
+  .pill-tabs {
+    @apply flex gap-2 overflow-x-auto pb-1;
+  }
+
+  .pill-tab {
+    @apply shrink-0 rounded-full px-4 py-2 text-sm font-medium text-[var(--text-muted)] transition;
+  }
+
+  .pill-tab-active {
+    @apply bg-[var(--accent)] text-white;
+  }
+
+  .pill-tab-inactive {
+    @apply bg-[var(--bg-elevated)] hover:text-[var(--text-primary)];
+  }
+
+  .activity-feed {
+    @apply overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)];
+    box-shadow: var(--shadow-soft);
+  }
+
+  .activity-row {
+    @apply flex min-h-[56px] items-center gap-3 border-b border-[var(--border)] px-4 py-3 transition last:border-b-0;
+  }
+
+  .activity-row:hover {
+    background: color-mix(in srgb, var(--bg-elevated) 50%, transparent);
+  }
+
+  .activity-icon {
+    @apply flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--accent-muted)] text-[var(--accent)];
+  }
+
+  .alert-banner {
+    @apply flex items-start gap-3 rounded-2xl border px-4 py-3;
+  }
+
+  .alert-banner-warning {
+    border-color: var(--pastel-peach);
+    background: var(--warning-muted);
+    color: var(--text-primary);
+  }
+
+  .alert-banner-danger {
+    border-color: rgba(220, 38, 38, 0.3);
+    background: var(--danger-muted);
+    color: var(--text-primary);
+  }
+
+  .alert-banner-info {
+    border-color: var(--pastel-sky);
+    background: var(--pastel-sky);
+    color: var(--text-primary);
+  }
+
+  [data-theme="dark"] .alert-banner-info {
+    background: var(--pastel-sky);
+  }
+
+  .bottom-tab-bar {
+    @apply fixed bottom-0 left-0 right-0 z-50 border-t border-[var(--border)] bg-[var(--bg-surface)] pb-[env(safe-area-inset-bottom)] md:hidden;
+    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.06);
+  }
+
+  .bottom-tab {
+    @apply flex flex-1 flex-col items-center gap-0.5 py-2 text-[10px] font-medium text-[var(--text-tertiary)] transition;
+  }
+
+  .bottom-tab-active {
+    @apply text-[var(--accent)];
+  }
+
+  .glass-panel {
+    @apply panel p-5 sm:p-6;
+  }
+
+  .gradient-text {
+    @apply text-[var(--accent)];
+  }
+
+  .pastel-card-mint {
+    background: var(--pastel-mint);
+  }
+
+  .pastel-card-lavender {
+    background: var(--pastel-lavender);
+  }
+
+  .pastel-card-peach {
+    background: var(--pastel-peach);
+  }
+
+  .pastel-card-sky {
+    background: var(--pastel-sky);
   }
 }
