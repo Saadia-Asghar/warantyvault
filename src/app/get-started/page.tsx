@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Building2, Store, User, ArrowRight } from "lucide-react";
+import { HashVsWalletInfo } from "@/components/hash-vs-wallet-info";
 
 const roles = [
   {
@@ -68,6 +69,15 @@ export default function GetStartedPage() {
         >
           Choose your role and create a real account — registration is free.
         </motion.p>
+
+        <motion.div
+          className="mt-6"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          <HashVsWalletInfo />
+        </motion.div>
 
         <div className="mt-8 space-y-3">
           {roles.map((r, i) => (

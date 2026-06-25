@@ -95,9 +95,10 @@ export function WalletLinkCard({ highlight }: { highlight?: boolean }) {
         <Wallet className="h-5 w-5 text-[var(--accent)]" />
         <h2 className="text-sm font-semibold text-[var(--text-primary)]">Blockchain wallet</h2>
       </div>
-      <p className="mt-2 text-xs leading-relaxed text-[var(--text-muted)]">
-        Optional — link MetaMask on Polygon Amoy. Your phone/email login stays the same. Linked wallets
-        must sign high-value or resale transfers.
+        <p className="mt-2 text-xs leading-relaxed text-[var(--text-muted)]">
+        <strong className="text-[var(--text-primary)]">Not required.</strong> Link MetaMask on Polygon
+        Amoy only if you want signed resale transfers. Phone/email login and warranty hashes work without
+        any crypto wallet.
       </p>
 
       {wallet?.walletAddress ? (
