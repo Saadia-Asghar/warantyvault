@@ -51,7 +51,14 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${plusJakarta.variable} ${fraunces.variable} ${ibmPlexMono.variable}`} suppressHydrationWarning>
-      <body className="font-sans antialiased">
+      <head>
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `:root{--bg-deep:#fdf9f5;--text-primary:#2d3142;--text-muted:#6b7289;--accent:#d4715a}body{margin:0;background:var(--bg-deep);color:var(--text-primary);font-family:var(--font-sans),system-ui,sans-serif;-webkit-font-smoothing:antialiased}`,
+          }}
+        />
+      </head>
+      <body className="min-h-screen bg-[var(--bg-deep)] font-sans text-[var(--text-primary)] antialiased">
         <ThemeProvider>
           <PageBackBar />
           <DemoModeBanner />
