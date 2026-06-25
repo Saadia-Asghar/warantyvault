@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { BuyerBottomNav } from "@/components/buyer-bottom-nav";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { WalletLinkCard } from "@/components/wallet-link-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { LogOut, User } from "lucide-react";
@@ -69,7 +70,11 @@ export default function BuyerProfilePage() {
           </div>
         </div>
 
-        <section className="panel mt-6 p-4">
+        <div className="mt-6">
+          <WalletLinkCard />
+        </div>
+
+        <section className="panel mt-4 p-4">
           <h2 className="text-sm font-semibold text-[var(--text-primary)]">Notifications</h2>
           <label className="mt-3 flex cursor-pointer items-center justify-between gap-3">
             <span className="text-sm text-[var(--text-muted)]">Email expiry reminders</span>

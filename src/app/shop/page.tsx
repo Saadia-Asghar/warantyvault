@@ -170,6 +170,13 @@ export default async function ShopDashboardPage() {
         )}
 
         <Link
+          href="/shop/profile"
+          className="mt-4 flex items-center justify-center gap-1 text-sm text-[var(--text-muted)] hover:underline"
+        >
+          Outlet profile & wallet <ChevronRight className="h-4 w-4" />
+        </Link>
+
+        <Link
           href="/shop/records"
           className="mt-4 flex items-center justify-center gap-1 text-sm text-[var(--accent)] hover:underline"
         >

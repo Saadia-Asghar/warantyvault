@@ -97,6 +97,8 @@ export const resaleTransferSchema = z.object({
   newBuyerPhone: z.string().min(10).max(15),
   newBuyerName: z.string().min(2).max(100),
   resaleAmount: z.number().positive().optional(),
+  walletSignature: z.string().min(1).optional(),
+  actionNonce: z.string().min(1).optional(),
 });
 
 export const claimOpenSchema = z.object({

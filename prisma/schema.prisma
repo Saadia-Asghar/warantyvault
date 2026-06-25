@@ -58,6 +58,8 @@ model Shop {
   outletCode     String?
   approvalStatus String           @default("STANDALONE")
   /// STANDALONE | PENDING | APPROVED | REJECTED
+  walletAddress  String?          @unique
+  walletLinkedAt DateTime?
   createdAt      DateTime         @default(now())
   policies       PolicyTemplate[]
   warranties     Warranty[]       @relation("IssuingShop")
@@ -77,6 +79,8 @@ model Buyer {
   email        String?    @unique
   passwordHash String
   name         String
+  walletAddress  String?    @unique
+  walletLinkedAt DateTime?
   createdAt    DateTime   @default(now())
   warranties   Warranty[]
   supportThreads SupportThread[]
@@ -349,6 +353,22 @@ model PushSubscription {
   createdAt DateTime @default(now())
 
   @@index([userId, userRole])
+}
+
+/// SIWE link + wallet action signatures (resale, etc.)
+model WalletNonce {
+  id        String   @id @default(cuid())
+  userId    String
+  userRole  String
+  /// buyer | shop
+  purpose   String
+  /// link | resale
+  nonce     String   @unique
+  metadata  String?
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId, userRole, purpose])
 }
 
 /// Company → shop stock dispatch (dealer intake)

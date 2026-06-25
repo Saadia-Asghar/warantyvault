@@ -4,6 +4,11 @@ import { resaleTransferSchema } from "@/lib/validators";
 import { handleApiError, jsonError, jsonOk } from "@/lib/api";
 import { initiateResaleTransfer } from "@/lib/warranty-service";
 import { prisma } from "@/lib/prisma";
+import {
+  resaleRequiresWalletSignature,
+  RESALE_WALLET_SIGN_THRESHOLD_PKR,
+  verifyResaleWalletSignature,
+} from "@/lib/wallet";
 
 export async function POST(
   req: NextRequest,
@@ -19,6 +24,36 @@ export async function POST(
 
     const body = await req.json();
     const data = resaleTransferSchema.parse(body);
+
+    const buyer = await prisma.buyer.findUnique({ where: { id: session.sub } });
+    const needsSig = resaleRequiresWalletSignature({
+      walletAddress: buyer?.walletAddress,
+      resaleAmount: data.resaleAmount,
+    });
+
+    if (needsSig) {
+      if (!buyer?.walletAddress) {
+        return jsonError(
+          `Link MetaMask in Profile for transfers ≥ ₨${RESALE_WALLET_SIGN_THRESHOLD_PKR.toLocaleString("en-PK")}`,
+          422,
+          { wallet: "Go to Profile → Link wallet" }
+        );
+      }
+      if (!data.walletSignature || !data.actionNonce) {
+        return jsonError("MetaMask signature required to authorize this resale", 422, {
+          walletSignature: "Sign the transfer in MetaMask",
+        });
+      }
+      await verifyResaleWalletSignature({
+        session,
+        warrantyId: params.id,
+        newBuyerPhone: data.newBuyerPhone,
+        newBuyerName: data.newBuyerName,
+        resaleAmount: data.resaleAmount,
+        walletSignature: data.walletSignature,
+        actionNonce: data.actionNonce,
+      });
+    }
 
     const updated = await initiateResaleTransfer(params.id, session.sub, {
       newBuyerPhone: data.newBuyerPhone,

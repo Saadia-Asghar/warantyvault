@@ -118,24 +118,55 @@ export default function BuyerWarrantyDetailPage() {
   async function startResale() {
     setResaleLoading(true);
     setError("");
-    const res = await fetch(`/api/warranties/${id}/resale`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        newBuyerPhone: resaleForm.newBuyerPhone,
-        newBuyerName: resaleForm.newBuyerName,
-        resaleAmount: resaleForm.resaleAmount
-          ? parseFloat(resaleForm.resaleAmount)
-          : undefined,
-      }),
-    });
-    const json = await res.json();
-    setResaleLoading(false);
-    if (json.success) {
-      setResaleOpen(false);
-      load();
-    } else {
-      setError(json.error ?? "Transfer failed");
+    try {
+      const amount = resaleForm.resaleAmount ? parseFloat(resaleForm.resaleAmount) : undefined;
+      const challengeRes = await fetch("/api/wallet/resale-challenge", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          warrantyId: id,
+          newBuyerPhone: resaleForm.newBuyerPhone,
+          newBuyerName: resaleForm.newBuyerName,
+          resaleAmount: amount,
+        }),
+      });
+      const challengeJson = await challengeRes.json();
+      if (!challengeJson.success) {
+        setError(challengeJson.error ?? "Could not prepare transfer");
+        return;
+      }
+
+      let walletSignature: string | undefined;
+      let actionNonce: string | undefined;
+
+      if (challengeJson.data.required) {
+        const { signWalletMessage } = await import("@/lib/metamask-client");
+        walletSignature = await signWalletMessage(challengeJson.data.message);
+        actionNonce = challengeJson.data.nonce;
+      }
+
+      const res = await fetch(`/api/warranties/${id}/resale`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          newBuyerPhone: resaleForm.newBuyerPhone,
+          newBuyerName: resaleForm.newBuyerName,
+          resaleAmount: amount,
+          walletSignature,
+          actionNonce,
+        }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        setResaleOpen(false);
+        load();
+      } else {
+        setError(json.error ?? "Transfer failed");
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Transfer failed");
+    } finally {
+      setResaleLoading(false);
     }
   }
 
@@ -372,6 +403,7 @@ export default function BuyerWarrantyDetailPage() {
                 <p className="text-sm font-medium text-[var(--text-primary)]">Transfer to new owner</p>
                 <p className="text-xs text-[var(--text-muted)]">
                   New buyer must be registered with this phone. Shop and brand get notified.
+                  Transfers ≥ ₨50,000 or linked wallets require MetaMask signature.
                 </p>
                 <Input
                   label="New buyer phone"
