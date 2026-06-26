@@ -1,6 +1,6 @@
 {
   "appId": "pk.warrantyvault.app",
-  "appName": "WarrantyVault PK",
+  "appName": "ShopSeal PK",
   "webDir": "out",
   "server": {
     "url": "https://warantyvault.vercel.app",
